@@ -3,25 +3,23 @@ export default function TextInput({
   type = "text",
   name,
   placeholder,
-  ...props
+  value,
+  onChange,
+  required = false,
 }) {
   return (
-    <div>
-      <label
-        htmlFor={name}
-        className="mb-2 block text-sm font-semibold text-slate-700"
-      >
-        {label}
-      </label>
+    <label className="block space-y-2">
+      <span className="text-sm font-bold text-slate-700">{label}</span>
 
       <input
-        id={name}
-        name={name}
         type={type}
+        name={name}
         placeholder={placeholder}
-        className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#0A3C86] focus:bg-white focus:ring-4 focus:ring-blue-100"
-        {...props}
+        value={value}
+        onChange={onChange}
+        required={required}
+        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#0A3C86] focus:ring-4 focus:ring-blue-100"
       />
-    </div>
+    </label>
   );
 }
