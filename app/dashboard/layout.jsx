@@ -4,9 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
+const ROLE_ROUTE_MAP = {
+  owner: "/dashboard/superadmin",
+  gm: "/dashboard/superadmin",
+  pm: "/dashboard/admin",
+  supervisor: "/dashboard/admin",
+  foreman: "/dashboard/employer",
+  lead: "/dashboard/employer",
+  cleaner: "/dashboard/cleaner",
+};
+
 export default function DashboardLayout({ children }) {
   const router = useRouter();
-
   const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   useEffect(() => {
@@ -17,6 +26,19 @@ export default function DashboardLayout({ children }) {
 
       if (!session) {
         router.replace("/auth/login");
+        return;
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
+
+      const destination = ROLE_ROUTE_MAP[profile?.role];
+
+      if (destination && !window.location.pathname.startsWith(destination)) {
+        router.replace(destination);
         return;
       }
 
