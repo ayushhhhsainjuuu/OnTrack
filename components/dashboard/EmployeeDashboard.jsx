@@ -19,18 +19,18 @@ const mockSchedule = [
 
 function StatCard({ label, value, sub, accent }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-5 backdrop-blur-sm">
-      <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</p>
-      <p className={`mt-2 text-3xl font-bold ${accent || "text-white"}`}>{value}</p>
-      {sub && <p className="mt-1 text-xs text-slate-400">{sub}</p>}
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
+      <p className={`mt-2 text-3xl font-bold ${accent || "text-gray-900"}`}>{value}</p>
+      {sub && <p className="mt-1 text-xs text-gray-500">{sub}</p>}
     </div>
   );
 }
 
 function statusClass(status) {
-  if (status === "On Time") return "bg-emerald-500/15 text-emerald-400";
-  if (status === "Late") return "bg-amber-500/15 text-amber-400";
-  return "bg-slate-500/15 text-slate-400";
+  if (status === "On Time") return "bg-emerald-100 text-emerald-700";
+  if (status === "Late") return "bg-amber-100 text-amber-700";
+  return "bg-gray-100 text-gray-600";
 }
 
 export default function EmployeeDashboard({ user }) {
@@ -53,33 +53,33 @@ export default function EmployeeDashboard({ user }) {
           label="Status"
           value={clockedIn ? "Clocked In" : "Clocked Out"}
           sub={clockedIn ? `Since ${clockTime}` : "Not started"}
-          accent={clockedIn ? "text-emerald-400" : "text-slate-300"}
+          accent={clockedIn ? "text-emerald-600" : "text-gray-900"}
         />
         <StatCard label="Hours This Week" value="32.5h" sub="Target: 40h" />
-        <StatCard label="Leave Balance" value="12 days" sub="remaining" accent="text-blue-300" />
-        <StatCard label="Next Shift" value="Tomorrow" sub="10:00 AM – 6:00 PM" accent="text-purple-300" />
+        <StatCard label="Leave Balance" value="12 days" sub="remaining" accent="text-blue-600" />
+        <StatCard label="Next Shift" value="Tomorrow" sub="10:00 AM – 6:00 PM" accent="text-purple-600" />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-        <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-6 backdrop-blur-sm flex flex-col items-center justify-center gap-5">
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm flex flex-col items-center justify-center gap-5">
           <div
-            className={`h-24 w-24 rounded-full flex items-center justify-center border-4 shadow-2xl transition-all ${clockedIn ? "border-emerald-500 bg-emerald-500/10 shadow-emerald-500/20" : "border-slate-600 bg-slate-800/50 shadow-black/30"}`}
+            className={`h-24 w-24 rounded-full flex items-center justify-center border-4 shadow-lg transition-all ${clockedIn ? "border-emerald-500 bg-emerald-50 shadow-emerald-200" : "border-gray-300 bg-gray-100 shadow-gray-200"}`}
           >
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-10 h-10 ${clockedIn ? "text-emerald-400" : "text-slate-400"}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`w-10 h-10 ${clockedIn ? "text-emerald-600" : "text-gray-400"}`}>
               <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
           </div>
           <div className="text-center">
-            <p className="text-lg font-bold text-white">{clockedIn ? "You're clocked in" : "You're clocked out"}</p>
-            <p className="text-sm text-slate-400">{clockedIn ? `Started at ${clockTime}` : "GPS verification required"}</p>
+            <p className="text-lg font-bold text-gray-900">{clockedIn ? "You're clocked in" : "You're clocked out"}</p>
+            <p className="text-sm text-gray-500">{clockedIn ? `Started at ${clockTime}` : "GPS verification required"}</p>
           </div>
           <button
             onClick={handleClock}
-            className={`w-full max-w-xs rounded-2xl px-6 py-3.5 text-sm font-bold shadow-lg transition-all hover:-translate-y-0.5 ${clockedIn ? "bg-rose-600 hover:bg-rose-500 shadow-rose-900/20 text-white" : "bg-[#062B63] hover:bg-[#0A3C86] shadow-blue-950/20 text-white"}`}
+            className={`w-full max-w-xs rounded-2xl px-6 py-3.5 text-sm font-bold shadow-md transition-all hover:-translate-y-0.5 text-white ${clockedIn ? "bg-rose-600 hover:bg-rose-500" : "bg-blue-700 hover:bg-blue-800"}`}
           >
             {clockedIn ? "Clock Out" : "Clock In"}
           </button>
-          <p className="text-xs text-slate-500 flex items-center gap-1.5">
+          <p className="text-xs text-gray-500 flex items-center gap-1.5">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5">
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
             </svg>
@@ -87,21 +87,21 @@ export default function EmployeeDashboard({ user }) {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-6 backdrop-blur-sm">
-          <h3 className="text-sm font-semibold text-white mb-4">Upcoming Schedule</h3>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <h3 className="text-sm font-semibold text-gray-900 mb-4">Upcoming Schedule</h3>
           <div className="space-y-3">
             {mockSchedule.map((s, i) => (
               <div
                 key={i}
-                className={`flex items-center justify-between rounded-xl px-4 py-3 ${i === 0 ? "bg-blue-600/10 border border-blue-500/20" : "bg-white/[0.04]"}`}
+                className={`flex items-center justify-between rounded-xl px-4 py-3 ${i === 0 ? "bg-blue-50 border border-blue-200" : "bg-gray-50 border border-gray-100"}`}
               >
                 <div>
-                  <p className="text-sm font-medium text-white">{s.date}</p>
-                  <p className="text-xs text-slate-400">{s.label}</p>
+                  <p className="text-sm font-medium text-gray-900">{s.date}</p>
+                  <p className="text-xs text-gray-500">{s.label}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-white">{s.shift}</p>
-                  <p className="text-xs text-slate-400">{s.role}</p>
+                  <p className="text-sm font-medium text-gray-900">{s.shift}</p>
+                  <p className="text-xs text-gray-500">{s.role}</p>
                 </div>
               </div>
             ))}
@@ -109,26 +109,26 @@ export default function EmployeeDashboard({ user }) {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/[0.05] p-6 backdrop-blur-sm">
-        <h3 className="text-sm font-semibold text-white mb-4">Recent Attendance</h3>
+      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+        <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent Attendance</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-white/10">
-                <th className="text-left text-xs font-medium text-slate-400 pb-3">Date</th>
-                <th className="text-left text-xs font-medium text-slate-400 pb-3">Clock In</th>
-                <th className="text-left text-xs font-medium text-slate-400 pb-3">Clock Out</th>
-                <th className="text-left text-xs font-medium text-slate-400 pb-3">Hours</th>
-                <th className="text-left text-xs font-medium text-slate-400 pb-3">Status</th>
+              <tr className="border-b border-gray-200">
+                <th className="text-left text-xs font-medium text-gray-500 pb-3">Date</th>
+                <th className="text-left text-xs font-medium text-gray-500 pb-3">Clock In</th>
+                <th className="text-left text-xs font-medium text-gray-500 pb-3">Clock Out</th>
+                <th className="text-left text-xs font-medium text-gray-500 pb-3">Hours</th>
+                <th className="text-left text-xs font-medium text-gray-500 pb-3">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.06]">
+            <tbody className="divide-y divide-gray-100">
               {mockAttendance.map((row, i) => (
-                <tr key={i} className="hover:bg-white/[0.03] transition-colors">
-                  <td className="py-3 text-white">{row.date}</td>
-                  <td className="py-3 text-slate-300">{row.clockIn}</td>
-                  <td className="py-3 text-slate-300">{row.clockOut}</td>
-                  <td className="py-3 text-slate-300">{row.hours}h</td>
+                <tr key={i} className="hover:bg-gray-50 transition-colors">
+                  <td className="py-3 text-gray-900">{row.date}</td>
+                  <td className="py-3 text-gray-600">{row.clockIn}</td>
+                  <td className="py-3 text-gray-600">{row.clockOut}</td>
+                  <td className="py-3 text-gray-600">{row.hours}h</td>
                   <td className="py-3">
                     <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusClass(row.status)}`}>
                       {row.status}

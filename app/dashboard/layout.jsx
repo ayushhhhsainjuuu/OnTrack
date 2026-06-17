@@ -1,79 +1,33 @@
-"use client";
+import Link from "next/link";
+import { LayoutDashboard, Calendar, FileText, CheckSquare, BarChart3, Settings } from "lucide-react";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-
-const ROLE_ROUTE_MAP = {
-  owner: "/dashboard/superadmin",
-  gm: "/dashboard/superadmin",
-  pm: "/dashboard/admin",
-  supervisor: "/dashboard/admin",
-  foreman: "/dashboard/employer",
-  lead: "/dashboard/employer",
-  cleaner: "/dashboard/cleaner",
-};
+const nav = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard/schedule", label: "Schedule", icon: Calendar },
+  { href: "/dashboard/leave", label: "Leave", icon: FileText },
+  { href: "/dashboard/tasks", label: "Tasks", icon: CheckSquare },
+  { href: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+  { href: "/dashboard/settings", label: "Settings", icon: Settings },
+];
 
 export default function DashboardLayout({ children }) {
-  const router = useRouter();
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
-
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.replace("/auth/login");
-        return;
-      }
-
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", session.user.id)
-        .single();
-
-      const destination = ROLE_ROUTE_MAP[profile?.role];
-
-      if (destination && !window.location.pathname.startsWith(destination)) {
-        router.replace(destination);
-        return;
-      }
-
-      setIsCheckingSession(false);
-    };
-
-    checkSession();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        router.replace("/auth/login");
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [router]);
-
-  if (isCheckingSession) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-        <div className="rounded-2xl border border-slate-200 bg-white px-6 py-5 text-center shadow-sm">
-          <p className="text-sm font-semibold text-slate-700">
-            Checking your session...
-          </p>
-          <p className="mt-1 text-xs text-slate-500">
-            Please wait while we verify your access.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  return children;
+  return (
+    <div className="min-h-screen flex">
+      <aside className="w-60 border-r bg-muted/30 p-4 hidden md:block">
+        <h1 className="font-bold text-lg px-2 mb-6">OnTrack</h1>
+        <nav className="space-y-1">
+          {nav.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition"
+            >
+              <Icon size={16} /> {label}
+            </Link>
+          ))}
+        </nav>
+      </aside>
+      <main className="flex-1 p-6 bg-background">{children}</main>
+    </div>
+  );
 }
