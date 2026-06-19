@@ -1,6 +1,16 @@
 @import "tailwindcss";
+@import "tailwindcss";
 
 :root {
+  /* === OnTrack brand palette === */
+  --app-bg: #f8fafc;
+  --sidebar: #0b1b3f;
+  --sidebar-hover: #16294f;
+  --brand: #2563eb;
+  --brand-dark: #1d4ed8;
+  --brand-accent: #7c3aed;   /* renamed from --accent to avoid the clash below */
+
+  /* === shadcn / UI tokens === */
   --background: #ffffff;
   --foreground: #171717;
   --card: #ffffff;
