@@ -50,12 +50,7 @@ export default function TasksPage() {
   const inProgress = tasks.filter((t) => t.status === "In Progress").length;
   const pct = Math.round((doneCount / tasks.length) * 100);
 
-  const counts = {
-    All: tasks.length,
-    "To Do": todo,
-    "In Progress": inProgress,
-    Done: doneCount,
-  };
+  const counts = { All: tasks.length, "To Do": todo, "In Progress": inProgress, Done: doneCount };
 
   return (
     <div className="space-y-6">
@@ -69,4 +64,94 @@ export default function TasksPage() {
           <h2 className="text-lg font-bold text-gray-900">My Tasks</h2>
           <p className="text-xs text-gray-500">{doneCount} of {tasks.length} completed</p>
         </div>
-        <button className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white
+        <button className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8] transition">
+          <Plus size={16} /> New Task
+        </button>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-gray-700">Overall progress</span>
+          <div className="flex items-center gap-6">
+            <span className="text-sm font-bold text-blue-600">{pct}%</span>
+            <div className="hidden sm:flex gap-5 text-center">
+              <div><p className="text-lg font-bold text-gray-900">{todo}</p><p className="text-[10px] text-gray-400">To Do</p></div>
+              <div><p className="text-lg font-bold text-gray-900">{inProgress}</p><p className="text-[10px] text-gray-400">In Progress</p></div>
+              <div><p className="text-lg font-bold text-gray-900">{doneCount}</p><p className="text-[10px] text-gray-400">Done</p></div>
+            </div>
+          </div>
+        </div>
+        <div className="h-2 w-full rounded-full bg-gray-100">
+          <div className="h-full rounded-full bg-blue-600 transition-all duration-300" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-2">
+          {statusFilters.map((f) => (
+            <button
+              key={f}
+              onClick={() => setStatusFilter(f)}
+              className={`px-3 py-1 text-xs font-medium rounded-full transition ${
+                statusFilter === f ? "bg-gray-900 text-white" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {f}{f !== "All" ? ` (${counts[f]})` : ""}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setCatFilter(c)}
+              className={`px-3 py-1 text-xs font-medium rounded-full transition ${
+                catFilter === c ? "bg-[#2563eb] text-white" : "bg-white border border-gray-200 text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {filtered.map((t) => {
+          const done = t.status === "Done";
+          return (
+            <div key={t.id} className={`group rounded-2xl border border-gray-200 bg-white px-5 py-4 shadow-sm flex items-center justify-between ${done ? "opacity-60" : ""}`}>
+              <div className="flex items-center gap-3 min-w-0">
+                <button onClick={() => toggleDone(t.id)} className="shrink-0">
+                  {done ? <CheckCircle2 size={20} className="text-emerald-500" /> : <Circle size={20} className="text-gray-300 hover:text-blue-500" />}
+                </button>
+                <div className="min-w-0">
+                  <p className={`text-sm font-semibold text-gray-900 ${done ? "line-through text-gray-400" : ""}`}>{t.title}</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-400 mt-0.5">
+                    <span className="flex items-center gap-1"><Tag size={11} /> {t.cat}</span>
+                    <span>·</span>
+                    <span className="flex items-center gap-1"><Calendar size={11} /> Due {t.due}</span>
+                    <span>·</span>
+                    <span>by {t.by}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${priorityStyle[t.priority]}`}>● {t.priority}</span>
+                <span className={`text-xs font-medium px-2.5 py-1 rounded-full flex items-center gap-1 ${statusStyle[t.status]}`}>
+                  {t.status === "In Progress" && <Clock size={11} />}
+                  {t.status === "Done" && <CheckCircle2 size={11} />}
+                  {t.status === "To Do" && <Circle size={11} />}
+                  {t.status}
+                </span>
+                <button onClick={() => removeTask(t.id)} className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 transition">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {filtered.length === 0 && <p className="text-center text-sm text-gray-400 py-8">No tasks match this filter.</p>}
+      </div>
+    </div>
+  );
+}
