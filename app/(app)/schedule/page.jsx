@@ -1,166 +1,143 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Umbrella, Plus, CheckCircle2, Clock } from "lucide-react";
+import { useSchedule } from "./hooks/useSchedule";
+import WeeklyCalendar from "./components/WeeklyCalendar";
+import { ChevronLeft, ChevronRight, CalendarPlus, Repeat } from "lucide-react";
 
-const week = [
-  { day: "MON", date: 9,  role: "Server", color: "text-blue-600",   time: "9:00 AM", end: "to 5:00 PM" },
-  { day: "TUE", date: 10, role: "Server", color: "text-blue-600",   time: "10:00 AM", end: "to 6:00 PM", today: true },
-  { day: "WED", date: 11, role: "Server", color: "text-blue-600",   time: "9:00 AM", end: "to 5:00 PM" },
-  { day: "THU", date: 12, off: true },
-  { day: "FRI", date: 13, role: "Server", color: "text-blue-600",   time: "10:00 AM", end: "to 6:00 PM" },
-  { day: "SAT", date: 14, role: "Lead",   color: "text-purple-600", time: "11:00 AM", end: "to 7:00 PM" },
-  { day: "SUN", date: 15, off: true },
-];
-
-const balances = [
-  { label: "Annual",   remaining: 12, used: 5, total: 17, bar: "bg-blue-600",    pct: 29 },
-  { label: "Sick",     remaining: 8,  used: 2, total: 10, bar: "bg-emerald-500", pct: 20 },
-  { label: "Personal", remaining: 2,  used: 1, total: 3,  bar: "bg-amber-500",   pct: 33 },
-];
-
-const requests = [
-  { type: "Annual Leave", range: "Jun 20 – Jun 21 · 2 days", submitted: "Jun 5", status: "Approved" },
-  { type: "Sick Leave",   range: "Jun 18 · 1 day",           submitted: "Jun 9", status: "Pending" },
-  { type: "Annual Leave", range: "Jul 4 – Jul 7 · 4 days",   submitted: "Jun 8", status: "Pending" },
-];
+const WEEK_FMT = { month: "short", day: "numeric" };
 
 export default function SchedulePage() {
-  const [tab, setTab] = useState("schedule");
+  const {
+    weekStart,
+    weekDays,
+    staff,
+    shiftsByCell,
+    leaveByCell,
+    loading,
+    error,
+    filters,
+    setFilters,
+    goToPrevWeek,
+    goToNextWeek,
+    goToToday,
+    refetch,
+  } = useSchedule();
+
+  const weekEnd = weekDays[weekDays.length - 1];
+  const rangeLabel = `${weekStart.toLocaleDateString([], WEEK_FMT)} – ${weekEnd.toLocaleDateString(
+    [],
+    { ...WEEK_FMT, year: "numeric" }
+  )}`;
+
+  const setFilter = (key) => (e) => setFilters((f) => ({ ...f, [key]: e.target.value }));
+
+  // Wire these to your shift-editor / pattern-editor modals.
+  const handleShiftClick = (shift) => console.log("edit shift", shift);
+  const handleEmptyCell = (cell) => console.log("add shift", cell);
+  const openProjectShiftForm = () => console.log("open project shift form");
+  const openRecurringForm = () => console.log("open recurring assignment form");
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Schedule & Leave</p>
-        <h1 className="text-2xl font-bold text-gray-900 mt-0.5">Schedule & Leave</h1>
-      </div>
-
-      {/* Tabs */}
-      <div className="inline-flex rounded-xl bg-gray-100 p-1">
-        {["schedule", "leave"].map((t) => (
+    <div className="space-y-4">
+      {/* header: week nav + add actions */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
           <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`px-4 py-1.5 text-sm font-medium rounded-lg transition ${
-              tab === t ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
-            }`}
+            onClick={goToPrevWeek}
+            className="rounded-md border border-border p-1.5 hover:bg-muted"
+            aria-label="Previous week"
           >
-            {t === "schedule" ? "My Schedule" : "Leave"}
+            <ChevronLeft className="h-4 w-4" />
           </button>
-        ))}
+          <p className="text-[15px] font-medium">{rangeLabel}</p>
+          <button
+            onClick={goToNextWeek}
+            className="rounded-md border border-border p-1.5 hover:bg-muted"
+            aria-label="Next week"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button
+            onClick={goToToday}
+            className="rounded-md border border-border px-2.5 py-1 text-xs hover:bg-muted"
+          >
+            Today
+          </button>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={openProjectShiftForm}
+            className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-[13px] hover:bg-muted"
+          >
+            <CalendarPlus className="h-4 w-4" /> Project shift
+          </button>
+          <button
+            onClick={openRecurringForm}
+            className="inline-flex items-center gap-1.5 rounded-md bg-emerald-700 px-3 py-1.5 text-[13px] text-white hover:bg-emerald-800"
+          >
+            <Repeat className="h-4 w-4" /> Recurring
+          </button>
+        </div>
       </div>
 
-      {tab === "schedule" ? (
-        <>
-          {/* Week header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">June 2025</h2>
-              <p className="text-xs text-gray-500">Week of Jun 9 – Jun 15</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <button className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"><ChevronLeft size={16} /></button>
-              <button className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-700 hover:bg-gray-50">Today</button>
-              <button className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"><ChevronRight size={16} /></button>
-            </div>
-          </div>
+      {/* filters + legend */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        <select
+          value={filters.serviceLine}
+          onChange={setFilter("serviceLine")}
+          className="h-8 rounded-md border border-border bg-background px-2 text-[13px]"
+        >
+          <option value="all">All service lines</option>
+          <option value="janitorial">Janitorial</option>
+          <option value="specialty">Specialty</option>
+        </select>
+        <select
+          value={filters.staffRole}
+          onChange={setFilter("staffRole")}
+          className="h-8 rounded-md border border-border bg-background px-2 text-[13px]"
+        >
+          <option value="all">All staff</option>
+          <option value="lead">Leads</option>
+          <option value="cleaner">Cleaners</option>
+          <option value="foreman">Foremen</option>
+        </select>
 
-          {/* Days */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            {week.map((d) => (
-              <div
-                key={d.date}
-                className={`rounded-2xl border p-4 ${d.today ? "border-blue-300 bg-blue-50/50" : "border-gray-200 bg-white"} shadow-sm`}
-              >
-                <p className="text-xs font-medium text-gray-400">{d.day}</p>
-                <p className={`text-2xl font-bold ${d.today ? "text-blue-600" : "text-gray-900"}`}>{d.date}</p>
-                {d.off ? (
-                  <div className="mt-6 text-center">
-                    <p className="text-gray-300 text-lg">–</p>
-                    <p className="text-xs text-gray-400">Day off</p>
-                  </div>
-                ) : (
-                  <div className="mt-3">
-                    <span className={`inline-flex items-center gap-1 text-xs font-medium ${d.color}`}>
-                      <span className="h-1.5 w-1.5 rounded-full bg-current" /> {d.role}
-                    </span>
-                    <p className="text-sm font-medium text-gray-900 mt-2">{d.time}</p>
-                    <p className="text-xs text-gray-500">{d.end}</p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+        <div className="flex-1" />
 
-          {/* Summary */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { v: "5", l: "Shifts This Week", s: "out of 7 days", c: "text-gray-900" },
-              { v: "40h", l: "Total Hours", s: "scheduled", c: "text-gray-900" },
-              { v: "2", l: "Days Off", s: "Thu & Sun", c: "text-purple-600" },
-            ].map((x, i) => (
-              <div key={i} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm text-center">
-                <p className={`text-3xl font-bold ${x.c}`}>{x.v}</p>
-                <p className="text-sm font-medium text-gray-700 mt-1">{x.l}</p>
-                <p className="text-xs text-gray-400">{x.s}</p>
-              </div>
-            ))}
-          </div>
-        </>
-      ) : (
-        <>
-          {/* Leave balances */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {balances.map((b) => (
-              <div key={b.label} className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-                <div className="flex items-start justify-between">
-                  <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{b.label}</p>
-                  <Umbrella size={16} className="text-gray-300" />
-                </div>
-                <p className="text-3xl font-bold text-gray-900 mt-2">{b.remaining}</p>
-                <p className="text-xs text-gray-500">days remaining</p>
-                <div className="mt-3 h-1.5 w-full rounded-full bg-gray-100">
-                  <div className={`h-full rounded-full ${b.bar}`} style={{ width: `${b.pct}%` }} />
-                </div>
-                <p className="text-xs text-gray-400 mt-2">{b.used} used of {b.total}</p>
-              </div>
-            ))}
-          </div>
+        <div className="flex gap-3.5">
+          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span className="h-2.5 w-2.5 rounded-[3px] bg-emerald-400" /> Recurring
+          </span>
+          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+            <span className="h-2.5 w-2.5 rounded-[3px] bg-blue-400" /> One-off
+          </span>
+        </div>
+      </div>
 
-          {/* Requests */}
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-900">Leave Requests</h2>
-            <button className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8] transition">
-              <Plus size={16} /> New Request
-            </button>
-          </div>
-
-          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-100">
-            {requests.map((r, i) => {
-              const approved = r.status === "Approved";
-              return (
-                <div key={i} className="flex items-center justify-between px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center ${approved ? "bg-emerald-100" : "bg-amber-100"}`}>
-                      {approved ? <CheckCircle2 size={16} className="text-emerald-600" /> : <Clock size={16} className="text-amber-600" />}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{r.type}</p>
-                      <p className="text-xs text-gray-500">{r.range}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400">Submitted {r.submitted}</span>
-                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${approved ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
-                      {r.status}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
+      {error && (
+        <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-[13px] text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+          {error}{" "}
+          <button onClick={refetch} className="underline">
+            Retry
+          </button>
+        </div>
       )}
+
+      <WeeklyCalendar
+        weekDays={weekDays}
+        staff={staff}
+        shiftsByCell={shiftsByCell}
+        leaveByCell={leaveByCell}
+        loading={loading}
+        onShiftClick={handleShiftClick}
+        onEmptyCellClick={handleEmptyCell}
+      />
+
+      <p className="text-xs text-muted-foreground">
+        Click any block to edit; recurring blocks prompt “this shift only” or “whole pattern.”
+        Empty cells are click-to-add.
+      </p>
     </div>
   );
 }
