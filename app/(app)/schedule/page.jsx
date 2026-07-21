@@ -2,31 +2,31 @@
 
 import { useMemo, useState } from "react";
 import {
-  ChevronLeft,
-  ChevronRight,
-  Umbrella,
   Plus,
+  Umbrella,
   CheckCircle2,
-  Clock,
 } from "lucide-react";
+import WeeklyCalender from "@/components/schedule/WeeklyCalender";
+import LeaveForm from "@/components/leave/LeaveForm";
+import LeaveTable from "@/components/leave/LeaveTable";
 
 const shiftPattern = [
   {
-    role: "Server",
+    role: "Cleaner",
     color: "text-blue-600 dark:text-blue-400",
     time: "9:00 AM",
     end: "to 5:00 PM",
     hours: 8,
   },
   {
-    role: "Server",
+    role: "Cleaner",
     color: "text-blue-600 dark:text-blue-400",
     time: "10:00 AM",
     end: "to 6:00 PM",
     hours: 8,
   },
   {
-    role: "Server",
+    role: "Cleaner",
     color: "text-blue-600 dark:text-blue-400",
     time: "9:00 AM",
     end: "to 5:00 PM",
@@ -37,11 +37,13 @@ const shiftPattern = [
     hours: 0,
   },
   {
-    role: "Server",
+    role: "Cleaner",
     color: "text-blue-600 dark:text-blue-400",
     time: "10:00 AM",
     end: "to 6:00 PM",
     hours: 8,
+    cancelled: true,
+    cancelReason: "Shift cancelled by management.",
   },
   {
     role: "Lead",
@@ -83,24 +85,40 @@ const balances = [
   },
 ];
 
-const requests = [
+const initialRequests = [
   {
+    id: 1,
     type: "Annual Leave",
     range: "Jun 20 – Jun 21 · 2 days",
     submitted: "Jun 5",
     status: "Approved",
+    reason: "Family event outside the city.",
   },
   {
+    id: 2,
     type: "Sick Leave",
     range: "Jun 18 · 1 day",
     submitted: "Jun 9",
     status: "Pending",
+    reason: "Medical appointment and recovery time.",
   },
   {
+    id: 3,
     type: "Annual Leave",
     range: "Jul 4 – Jul 7 · 4 days",
     submitted: "Jun 8",
     status: "Pending",
+    reason: "Previously planned family trip.",
+  },
+  {
+    id: 4,
+    type: "Personal Leave",
+    range: "May 12 · 1 day",
+    submitted: "May 4",
+    status: "Rejected",
+    reason: "Personal appointment.",
+    rejectionNote:
+      "The request overlaps with a high-demand shift.",
   },
 ];
 
@@ -138,104 +156,122 @@ function sameDate(firstDate, secondDate) {
   );
 }
 
-function formatShortDate(date) {
+function formatSubmittedDate(date) {
   return date.toLocaleDateString("en-CA", {
     month: "short",
     day: "numeric",
   });
 }
 
-function formatMonthHeading(startDate, endDate) {
-  const sameMonth =
-    startDate.getMonth() === endDate.getMonth() &&
-    startDate.getFullYear() === endDate.getFullYear();
-
-  if (sameMonth) {
-    return startDate.toLocaleDateString("en-CA", {
-      month: "long",
-      year: "numeric",
-    });
-  }
-
-  const startLabel = startDate.toLocaleDateString(
+function formatLeaveDate(dateValue) {
+  return new Date(`${dateValue}T00:00:00`).toLocaleDateString(
     "en-CA",
     {
       month: "short",
-      year: "numeric",
+      day: "numeric",
     }
   );
+}
 
-  const endLabel = endDate.toLocaleDateString("en-CA", {
-    month: "short",
-    year: "numeric",
-  });
+function createRangeLabel(startDate, endDate, days) {
+  const startLabel = formatLeaveDate(startDate);
+  const endLabel = formatLeaveDate(endDate);
 
-  return `${startLabel} – ${endLabel}`;
+  const dateLabel =
+    startDate === endDate
+      ? startLabel
+      : `${startLabel} – ${endLabel}`;
+
+  return `${dateLabel} · ${days} ${
+    days === 1 ? "day" : "days"
+  }`;
 }
 
 export default function SchedulePage() {
   const [tab, setTab] = useState("schedule");
-
   const [weekStart, setWeekStart] = useState(() =>
     startOfWeek(new Date())
   );
+
+  const [leaveFormOpen, setLeaveFormOpen] =
+    useState(false);
+
+  const [leaveRequests, setLeaveRequests] =
+    useState(initialRequests);
+
+  const [successMessage, setSuccessMessage] =
+    useState("");
 
   const today = new Date();
 
   const week = useMemo(() => {
     return shiftPattern.map((shift, index) => {
-      const date = addDays(weekStart, index);
+      const fullDate = addDays(weekStart, index);
 
       return {
         ...shift,
-        fullDate: date,
-        day: date
+        fullDate,
+        day: fullDate
           .toLocaleDateString("en-CA", {
             weekday: "short",
           })
           .toUpperCase(),
-        date: date.getDate(),
-        today: sameDate(date, today),
+        date: fullDate.getDate(),
+        today: sameDate(fullDate, today),
       };
     });
   }, [weekStart]);
 
   const weekEnd = addDays(weekStart, 6);
 
-  const shiftCount = week.filter(
-    (day) => !day.off
-  ).length;
+  const handleNewLeaveRequest = (request) => {
+    const newRequest = {
+      id: Date.now(),
+      type: request.type,
+      range: createRangeLabel(
+        request.startDate,
+        request.endDate,
+        request.days
+      ),
+      submitted: formatSubmittedDate(new Date()),
+      status: "Pending",
+      reason: request.reason,
+    };
 
-  const daysOff = week.filter((day) => day.off);
+    setLeaveRequests((current) => [
+      newRequest,
+      ...current,
+    ]);
 
-  const totalHours = week.reduce(
-    (total, day) => total + (day.hours || 0),
-    0
-  );
+    setSuccessMessage(
+      "Your leave request was submitted successfully."
+    );
 
-  const goToPreviousWeek = () => {
-    setWeekStart((currentWeek) =>
-      addWeeks(currentWeek, -1)
+    window.setTimeout(() => {
+      setSuccessMessage("");
+    }, 4000);
+  };
+
+  const handleCancelRequest = (requestId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this leave request?"
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    setLeaveRequests((current) =>
+      current.map((request) =>
+        request.id === requestId
+          ? {
+              ...request,
+              status: "Cancelled",
+            }
+          : request
+      )
     );
   };
-
-  const goToNextWeek = () => {
-    setWeekStart((currentWeek) =>
-      addWeeks(currentWeek, 1)
-    );
-  };
-
-  const goToCurrentWeek = () => {
-    setWeekStart(startOfWeek(new Date()));
-  };
-
-  const dayOffLabels = daysOff
-    .map((day) =>
-      day.fullDate.toLocaleDateString("en-CA", {
-        weekday: "short",
-      })
-    )
-    .join(" & ");
 
   return (
     <div className="space-y-6">
@@ -247,9 +283,13 @@ export default function SchedulePage() {
         <h1 className="mt-0.5 text-2xl font-bold text-gray-900 dark:text-white">
           Schedule & Leave
         </h1>
+
+        <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+          Review your weekly shifts and manage your
+          leave requests.
+        </p>
       </div>
 
-      {/* Tabs */}
       <div className="inline-flex rounded-xl bg-gray-100 p-1 dark:bg-slate-800">
         {["schedule", "leave"].map((item) => (
           <button
@@ -270,168 +310,33 @@ export default function SchedulePage() {
       </div>
 
       {tab === "schedule" ? (
-        <>
-          {/* Week heading and navigation */}
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-            <div>
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                {formatMonthHeading(
-                  weekStart,
-                  weekEnd
-                )}
-              </h2>
-
-              <p className="text-xs text-gray-500 dark:text-slate-400">
-                Week of {formatShortDate(weekStart)} –{" "}
-                {formatShortDate(weekEnd)}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={goToPreviousWeek}
-                className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                aria-label="Previous week"
-                title="Previous week"
-              >
-                <ChevronLeft size={16} />
-              </button>
-
-              <button
-                type="button"
-                onClick={goToCurrentWeek}
-                className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-              >
-                Today
-              </button>
-
-              <button
-                type="button"
-                onClick={goToNextWeek}
-                className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
-                aria-label="Next week"
-                title="Next week"
-              >
-                <ChevronRight size={16} />
-              </button>
-            </div>
-          </div>
-
-          {/* Weekly schedule */}
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
-            {week.map((day) => (
-              <div
-                key={day.fullDate.toISOString()}
-                className={`rounded-2xl border p-4 shadow-sm transition-colors ${
-                  day.today
-                    ? "border-blue-400 bg-blue-50/70 ring-2 ring-blue-100 dark:border-blue-500 dark:bg-blue-950/35 dark:ring-blue-950"
-                    : "border-gray-200 bg-white dark:border-slate-700 dark:bg-[#111c2d]"
-                }`}
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <p className="text-xs font-medium text-gray-400 dark:text-slate-500">
-                    {day.day}
-                  </p>
-
-                  {day.today && (
-                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-                      Today
-                    </span>
-                  )}
-                </div>
-
-                <p
-                  className={`text-2xl font-bold ${
-                    day.today
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-900 dark:text-white"
-                  }`}
-                >
-                  {day.date}
-                </p>
-
-                {day.off ? (
-                  <div className="mt-6 text-center">
-                    <p className="text-lg text-gray-300 dark:text-slate-600">
-                      –
-                    </p>
-
-                    <p className="text-xs text-gray-400 dark:text-slate-500">
-                      Day off
-                    </p>
-                  </div>
-                ) : (
-                  <div className="mt-3">
-                    <span
-                      className={`inline-flex items-center gap-1 text-xs font-medium ${day.color}`}
-                    >
-                      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-
-                      {day.role}
-                    </span>
-
-                    <p className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
-                      {day.time}
-                    </p>
-
-                    <p className="text-xs text-gray-500 dark:text-slate-400">
-                      {day.end}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          {/* Weekly summary */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div className={`${cardClass} p-6 text-center`}>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {shiftCount}
-              </p>
-
-              <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
-                Shifts This Week
-              </p>
-
-              <p className="text-xs text-gray-400 dark:text-slate-500">
-                out of 7 days
-              </p>
-            </div>
-
-            <div className={`${cardClass} p-6 text-center`}>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                {totalHours}h
-              </p>
-
-              <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
-                Total Hours
-              </p>
-
-              <p className="text-xs text-gray-400 dark:text-slate-500">
-                scheduled
-              </p>
-            </div>
-
-            <div className={`${cardClass} p-6 text-center`}>
-              <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                {daysOff.length}
-              </p>
-
-              <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
-                Days Off
-              </p>
-
-              <p className="text-xs text-gray-400 dark:text-slate-500">
-                {dayOffLabels || "None"}
-              </p>
-            </div>
-          </div>
-        </>
+        <WeeklyCalender
+          week={week}
+          weekStart={weekStart}
+          weekEnd={weekEnd}
+          onPreviousWeek={() =>
+            setWeekStart((current) =>
+              addWeeks(current, -1)
+            )
+          }
+          onNextWeek={() =>
+            setWeekStart((current) =>
+              addWeeks(current, 1)
+            )
+          }
+          onToday={() =>
+            setWeekStart(startOfWeek(new Date()))
+          }
+        />
       ) : (
-        <>
-          {/* Leave balances */}
+        <div className="space-y-6">
+          {successMessage && (
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <CheckCircle2 size={19} />
+              {successMessage}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             {balances.map((balance) => (
               <div
@@ -474,87 +379,40 @@ export default function SchedulePage() {
             ))}
           </div>
 
-          {/* Request heading */}
-          <div className="flex items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-              Leave Requests
-            </h2>
+          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                My leave requests
+              </h2>
+
+              <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                View pending and previous requests or
+                submit a new one.
+              </p>
+            </div>
 
             <button
               type="button"
-              className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
+              onClick={() => setLeaveFormOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8]"
             >
               <Plus size={16} />
               New Request
             </button>
           </div>
 
-          {/* Requests */}
-          <div
-            className={`${cardClass} divide-y divide-gray-100 dark:divide-slate-700`}
-          >
-            {requests.map((request) => {
-              const approved =
-                request.status === "Approved";
-
-              return (
-                <div
-                  key={`${request.type}-${request.range}`}
-                  className="flex flex-col justify-between gap-3 px-5 py-4 sm:flex-row sm:items-center"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                        approved
-                          ? "bg-emerald-100 dark:bg-emerald-950/50"
-                          : "bg-amber-100 dark:bg-amber-950/50"
-                      }`}
-                    >
-                      {approved ? (
-                        <CheckCircle2
-                          size={16}
-                          className="text-emerald-600 dark:text-emerald-400"
-                        />
-                      ) : (
-                        <Clock
-                          size={16}
-                          className="text-amber-600 dark:text-amber-400"
-                        />
-                      )}
-                    </div>
-
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {request.type}
-                      </p>
-
-                      <p className="text-xs text-gray-500 dark:text-slate-400">
-                        {request.range}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400 dark:text-slate-500">
-                      Submitted {request.submitted}
-                    </span>
-
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-                        approved
-                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
-                          : "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
-                      }`}
-                    >
-                      {request.status}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </>
+          <LeaveTable
+            requests={leaveRequests}
+            onCancel={handleCancelRequest}
+          />
+        </div>
       )}
+
+      <LeaveForm
+        isOpen={leaveFormOpen}
+        onClose={() => setLeaveFormOpen(false)}
+        onSubmit={handleNewLeaveRequest}
+      />
     </div>
   );
 }
