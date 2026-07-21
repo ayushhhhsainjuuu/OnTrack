@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+
 import ShiftCard from "@/components/schedule/ShiftCard";
 
 function formatShortDate(date) {
@@ -33,10 +34,13 @@ function formatMonthHeading(startDate, endDate) {
     }
   );
 
-  const endLabel = endDate.toLocaleDateString("en-CA", {
-    month: "short",
-    year: "numeric",
-  });
+  const endLabel = endDate.toLocaleDateString(
+    "en-CA",
+    {
+      month: "short",
+      year: "numeric",
+    }
+  );
 
   return `${startLabel} – ${endLabel}`;
 }
@@ -45,25 +49,48 @@ const cardClass =
   "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]";
 
 export default function WeeklyCalender({
-  week,
+  week = [],
   weekStart,
   weekEnd,
   onPreviousWeek,
   onNextWeek,
   onToday,
 }) {
+  /*
+    Approved leave is not an active shift.
+
+    It must not:
+    - increase active shift count
+    - increase total weekly hours
+    - count as a cancelled shift
+    - count as a regular day off
+  */
   const activeShifts = week.filter(
-    (shift) => !shift.off && !shift.cancelled
+    (shift) =>
+      !shift.off &&
+      !shift.cancelled &&
+      !shift.approvedLeave
+  );
+
+  const approvedLeaveDays = week.filter(
+    (shift) => shift.approvedLeave
   );
 
   const cancelledShifts = week.filter(
-    (shift) => shift.cancelled
+    (shift) =>
+      shift.cancelled &&
+      !shift.approvedLeave
   );
 
-  const daysOff = week.filter((shift) => shift.off);
+  const daysOff = week.filter(
+    (shift) =>
+      shift.off &&
+      !shift.approvedLeave
+  );
 
   const totalHours = activeShifts.reduce(
-    (total, shift) => total + (shift.hours || 0),
+    (total, shift) =>
+      total + Number(shift.hours || 0),
     0
   );
 
@@ -75,16 +102,32 @@ export default function WeeklyCalender({
     )
     .join(" & ");
 
+  const approvedLeaveLabels = approvedLeaveDays
+    .map((shift) =>
+      shift.fullDate.toLocaleDateString("en-CA", {
+        weekday: "short",
+      })
+    )
+    .join(" & ");
+
+  if (!weekStart || !weekEnd) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-            {formatMonthHeading(weekStart, weekEnd)}
+            {formatMonthHeading(
+              weekStart,
+              weekEnd
+            )}
           </h2>
 
           <p className="text-xs text-gray-500 dark:text-slate-400">
-            Week of {formatShortDate(weekStart)} –{" "}
+            Week of{" "}
+            {formatShortDate(weekStart)} –{" "}
             {formatShortDate(weekEnd)}
           </p>
         </div>
@@ -103,7 +146,7 @@ export default function WeeklyCalender({
           <button
             type="button"
             onClick={onToday}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             Today
           </button>
@@ -123,13 +166,16 @@ export default function WeeklyCalender({
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
         {week.map((shift) => (
           <ShiftCard
-            key={shift.fullDate.toISOString()}
+            key={
+              shift.fullDate?.toISOString() ||
+              `${shift.day}-${shift.date}`
+            }
             shift={shift}
           />
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <div className={`${cardClass} p-5 text-center`}>
           <p className="text-3xl font-bold text-gray-900 dark:text-white">
             {activeShifts.length}
@@ -154,7 +200,21 @@ export default function WeeklyCalender({
           </p>
 
           <p className="text-xs text-gray-400 dark:text-slate-500">
-            excluding cancellations
+            excluding leave and cancellations
+          </p>
+        </div>
+
+        <div className={`${cardClass} p-5 text-center`}>
+          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+            {approvedLeaveDays.length}
+          </p>
+
+          <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
+            Approved Leave
+          </p>
+
+          <p className="text-xs text-gray-400 dark:text-slate-500">
+            {approvedLeaveLabels || "None"}
           </p>
         </div>
 
