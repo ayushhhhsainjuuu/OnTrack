@@ -1,22 +1,38 @@
 import { ArrowUp, ArrowDown } from "lucide-react";
 
-export default function StatsCard({ title, value, change, icon: Icon }) {
+export default function StatsCard({
+  title,
+  value,
+  change,
+  icon: Icon,
+}) {
   const positive = change >= 0;
+
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 flex items-start justify-between shadow-sm">
+    <div className="flex items-start justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
       <div>
-        <p className="text-sm text-gray-500">{title}</p>
-        <p className="text-2xl font-semibold mt-1 text-gray-900">{value}</p>
+        <p className="text-sm text-gray-500 dark:text-slate-400">{title}</p>
+        <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
+          {value}
+        </p>
+
         {change !== undefined && (
-          <p className={`text-xs mt-2 flex items-center gap-1 ${positive ? "text-green-600" : "text-red-600"}`}>
+          <p
+            className={`mt-2 flex items-center gap-1 text-xs ${
+              positive
+                ? "text-green-600 dark:text-green-400"
+                : "text-red-600 dark:text-red-400"
+            }`}
+          >
             {positive ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
             {Math.abs(change)}% vs last week
           </p>
         )}
       </div>
+
       {Icon && (
-        <div className="rounded-lg bg-gray-100 p-2">
-          <Icon size={20} className="text-gray-500" />
+        <div className="rounded-lg bg-gray-100 p-2 dark:bg-slate-700">
+          <Icon size={20} className="text-gray-500 dark:text-slate-300" />
         </div>
       )}
     </div>

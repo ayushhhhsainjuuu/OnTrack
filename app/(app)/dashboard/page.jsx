@@ -14,13 +14,15 @@ export default function DashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
-        router.push("/auth/login");
+        router.replace("/auth/login");
         return;
       }
 
-      // role is stored in Supabase Auth user metadata via SQL update
       const role = (
         user.user_metadata?.role ||
         user.app_metadata?.role ||
@@ -33,31 +35,49 @@ export default function DashboardPage() {
         email: user.email,
       });
     }
+
     load();
   }, [router]);
 
-  if (state.loading) return <div className="p-6 text-gray-500">Loading...</div>;
+  if (state.loading) {
+    return (
+      <div className="p-6 text-sm font-medium text-gray-500 dark:text-slate-400">
+        Loading dashboard...
+      </div>
+    );
+  }
 
   switch (state.role) {
     case "owner":
-    case "general manager (gm)":  return <SuperAdminDashboard />;
+    case "general manager (gm)":
+      return <SuperAdminDashboard />;
+
     case "project manager":
-    case "accountant supervisor":  return <AdminDashboard />;
+    case "accountant supervisor":
+      return <AdminDashboard />;
+
     case "foreman":
     case "lead":
-    case "cleaner":               return <EmployeeDashboard />;
+    case "cleaner":
+      return <EmployeeDashboard />;
   }
 
-  // no role matched -- show debug info
   return (
     <div className="p-6">
-      <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 max-w-lg">
-        <h2 className="font-semibold text-amber-900 mb-2">No role matched -- debug info</h2>
-        <pre className="text-xs text-amber-800 whitespace-pre-wrap">
-{JSON.stringify({
-  email: state.email,
-  roleFound: state.role || "(empty)",
-}, null, 2)}
+      <div className="max-w-lg rounded-xl border border-amber-300 bg-amber-50 p-5 dark:border-amber-800 dark:bg-amber-950/30">
+        <h2 className="mb-2 font-semibold text-amber-900 dark:text-amber-200">
+          No role matched — debug info
+        </h2>
+
+        <pre className="whitespace-pre-wrap text-xs text-amber-800 dark:text-amber-300">
+          {JSON.stringify(
+            {
+              email: state.email,
+              roleFound: state.role || "(empty)",
+            },
+            null,
+            2
+          )}
         </pre>
       </div>
     </div>

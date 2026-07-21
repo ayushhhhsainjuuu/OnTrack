@@ -1,16 +1,21 @@
 @import "tailwindcss";
-@import "tailwindcss";
+
+/*
+  Tailwind CSS v4 dark mode.
+
+  Dark classes are activated only when the HTML element has:
+  data-theme="dark"
+*/
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* === OnTrack brand palette === */
   --app-bg: #f8fafc;
   --sidebar: #0b1b3f;
   --sidebar-hover: #16294f;
   --brand: #2563eb;
   --brand-dark: #1d4ed8;
-  --brand-accent: #7c3aed;   /* renamed from --accent to avoid the clash below */
+  --brand-accent: #7c3aed;
 
-  /* === shadcn / UI tokens === */
   --background: #ffffff;
   --foreground: #171717;
   --card: #ffffff;
@@ -31,6 +36,32 @@
   --input: #e4e4e7;
   --ring: #18181b;
   --radius: 0.5rem;
+}
+
+html[data-theme="dark"] {
+  --app-bg: #07111f;
+  --sidebar: #07152f;
+  --sidebar-hover: #132748;
+
+  --background: #07111f;
+  --foreground: #f8fafc;
+  --card: #111c2d;
+  --card-foreground: #f8fafc;
+  --popover: #111c2d;
+  --popover-foreground: #f8fafc;
+  --primary: #f8fafc;
+  --primary-foreground: #111827;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --border: #334155;
+  --input: #334155;
+  --ring: #60a5fa;
 }
 
 @theme inline {
@@ -57,8 +88,23 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  background: var(--background);
+}
+
 body {
+  min-height: 100vh;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
 }
