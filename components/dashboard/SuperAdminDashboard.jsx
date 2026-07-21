@@ -14,19 +14,6 @@ const recentActivity = [
   { who: "Maria Lopez", action: "submitted a leave request", when: "5 hrs ago", type: "request" },
 ];
 
-function StatCard({ label, value, sub, accent, icon: Icon }) {
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</p>
-        {Icon && <Icon size={18} className="text-gray-400" />}
-      </div>
-      <p className={`mt-2 text-3xl font-bold ${accent || "text-gray-900"}`}>{value}</p>
-      {sub && <p className="mt-1 text-xs text-gray-500">{sub}</p>}
-    </div>
-  );
-}
-
 const activityDot = {
   approval: "bg-emerald-500",
   schedule: "bg-blue-500",
@@ -34,49 +21,100 @@ const activityDot = {
   request: "bg-amber-500",
 };
 
+function StatCard({ label, value, sub, accent, icon: Icon }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
+      <div className="flex items-start justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
+          {label}
+        </p>
+        {Icon && <Icon size={18} className="text-gray-400 dark:text-slate-500" />}
+      </div>
+
+      <p className={`mt-2 text-3xl font-bold ${accent || "text-gray-900 dark:text-white"}`}>
+        {value}
+      </p>
+
+      {sub && (
+        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+          {sub}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function SuperAdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Super Admin</h1>
-        <p className="text-sm text-gray-500">Platform-wide overview across all companies</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+          Super Admin
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-slate-400">
+          Platform-wide overview across all companies
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard label="Companies" value="2" sub="both active" icon={Building2} />
-        <StatCard label="Total Staff" value="87" sub="+8 this month" accent="text-blue-600" icon={Users} />
-        <StatCard label="On Shift Now" value="59" sub="across all sites" accent="text-emerald-600" icon={Activity} />
-        <StatCard label="Pending Approvals" value="7" sub="needs attention" accent="text-amber-600" icon={AlertTriangle} />
+        <StatCard label="Total Staff" value="87" sub="+8 this month" accent="text-blue-600 dark:text-blue-400" icon={Users} />
+        <StatCard label="On Shift Now" value="59" sub="across all sites" accent="text-emerald-600 dark:text-emerald-400" icon={Activity} />
+        <StatCard label="Pending Approvals" value="7" sub="needs attention" accent="text-amber-600 dark:text-amber-400" icon={AlertTriangle} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Companies</h3>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+            Companies
+          </h3>
+
           <div className="space-y-3">
-            {companies.map((c, i) => (
-              <div key={i} className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3">
+            {companies.map((company) => (
+              <div
+                key={company.name}
+                className="flex items-center justify-between rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 transition-colors dark:border-slate-700 dark:bg-slate-800/60"
+              >
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">{c.name}</p>
-                  <p className="text-xs text-gray-500">{c.staff} staff · {c.sites} sites</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {company.name}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400">
+                    {company.staff} staff · {company.sites} sites
+                  </p>
                 </div>
+
                 <div className="text-right">
-                  <p className="text-sm font-medium text-emerald-600">{c.active} on shift</p>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-medium">{c.status}</span>
+                  <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    {company.active} on shift
+                  </p>
+                  <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300">
+                    {company.status}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Recent Activity</h3>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
+          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+            Recent Activity
+          </h3>
+
           <div className="space-y-4">
-            {recentActivity.map((a, i) => (
-              <div key={i} className="flex gap-3">
-                <span className={`mt-1.5 h-2 w-2 rounded-full shrink-0 ${activityDot[a.type]}`} />
+            {recentActivity.map((activity) => (
+              <div key={`${activity.who}-${activity.when}`} className="flex gap-3">
+                <span className={`mt-1.5 h-2 w-2 shrink-0 rounded-full ${activityDot[activity.type]}`} />
+
                 <div>
-                  <p className="text-sm text-gray-900"><span className="font-medium">{a.who}</span> {a.action}</p>
-                  <p className="text-xs text-gray-400">{a.when}</p>
+                  <p className="text-sm text-gray-900 dark:text-slate-100">
+                    <span className="font-medium">{activity.who}</span>{" "}
+                    {activity.action}
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500">
+                    {activity.when}
+                  </p>
                 </div>
               </div>
             ))}

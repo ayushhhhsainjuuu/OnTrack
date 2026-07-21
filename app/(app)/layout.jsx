@@ -49,10 +49,10 @@ export default function DashboardLayout({ children }) {
   } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#f8fafc]">
+    <div className="min-h-screen bg-[#f8fafc] text-gray-900 transition-colors duration-200 dark:bg-[#07111f] dark:text-slate-100">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-[#0b1b3f] text-white transition-transform duration-200 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-[#0b1b3f] text-white transition-transform duration-200 dark:bg-[#07152f] md:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -63,7 +63,10 @@ export default function DashboardLayout({ children }) {
             alt="OnTrack"
             className="h-9 w-9 rounded-xl"
           />
-          <span className="text-lg font-bold">OnTrack</span>
+
+          <span className="text-lg font-bold">
+            OnTrack
+          </span>
         </div>
 
         {/* Navigation */}
@@ -81,10 +84,11 @@ export default function DashboardLayout({ children }) {
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                   active
                     ? "bg-[#2563eb] text-white shadow-lg"
-                    : "text-slate-300 hover:bg-[#16294f] hover:text-white"
+                    : "text-slate-300 hover:bg-[#16294f] hover:text-white dark:hover:bg-[#132748]"
                 }`}
               >
                 <Icon size={18} />
+
                 {label}
 
                 {active && (
@@ -102,7 +106,10 @@ export default function DashboardLayout({ children }) {
           <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold">
               {isLoading ? (
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2
+                  size={16}
+                  className="animate-spin"
+                />
               ) : (
                 initials
               )}
@@ -114,7 +121,9 @@ export default function DashboardLayout({ children }) {
               </p>
 
               <p className="truncate text-xs text-slate-400">
-                {isLoading ? "Checking account" : role}
+                {isLoading
+                  ? "Checking account"
+                  : role}
               </p>
             </div>
           </div>
@@ -124,17 +133,17 @@ export default function DashboardLayout({ children }) {
       {/* Mobile overlay */}
       {open && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
           onClick={() => setOpen(false)}
         />
       )}
 
       {/* Main column */}
       <div className="md:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center border-b border-gray-200 bg-white/80 px-4 backdrop-blur md:px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center border-b border-gray-200 bg-white/80 px-4 backdrop-blur transition-colors duration-200 dark:border-slate-700 dark:bg-[#111c2d]/90 md:px-8">
           <button
             type="button"
-            className="-ml-2 p-2 text-gray-600 md:hidden"
+            className="-ml-2 rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-700 md:hidden"
             onClick={() => setOpen(true)}
             aria-label="Open navigation"
           >
@@ -146,16 +155,20 @@ export default function DashboardLayout({ children }) {
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className="relative rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+              className="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-700"
               aria-label="Notifications"
             >
               <Bell size={20} />
+
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red-500" />
             </button>
 
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold text-white">
               {isLoading ? (
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2
+                  size={16}
+                  className="animate-spin"
+                />
               ) : (
                 initials
               )}
