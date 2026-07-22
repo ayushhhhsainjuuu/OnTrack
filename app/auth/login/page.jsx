@@ -1,46 +1,103 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import AuthShell from "@/components/auth/AuthShell";
 import TextInput from "@/components/auth/TextInput";
 import PasswordInput from "@/components/auth/PasswordInput";
-import { supabase } from "@/lib/supabase";
+import {
+  REMEMBER_ME_KEY,
+  supabase,
+} from "@/lib/supabase";
+
+const REMEMBERED_EMAIL_KEY = "ontrack-remembered-email";
 
 export default function LoginPage() {
   const router = useRouter();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(true);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const savedRememberPreference =
+      window.localStorage.getItem(REMEMBER_ME_KEY);
+
+    const savedEmail =
+      window.localStorage.getItem(REMEMBERED_EMAIL_KEY);
+
+    const shouldRemember =
+      savedRememberPreference === "true";
+
+    setRememberMe(shouldRemember);
+
+    if (shouldRemember && savedEmail) {
+      setEmail(savedEmail);
+    }
+  }, []);
+
+  const handleRememberMeChange = (event) => {
+    const checked = event.target.checked;
+
+    setRememberMe(checked);
+
+    if (!checked) {
+      window.localStorage.removeItem(
+        REMEMBERED_EMAIL_KEY
+      );
+    }
+  };
 
   const handleLogin = async (event) => {
     event.preventDefault();
 
     setErrorMessage("");
+
+    const cleanEmail = email.trim();
+
+    if (!cleanEmail || !password.trim()) {
+      setErrorMessage(
+        "Please enter both your email and password."
+      );
+      return;
+    }
+
     setIsLoading(true);
 
-    if (!email.trim() || !password.trim()) {
-      setErrorMessage("Please enter both your email and password.");
-      setIsLoading(false);
-      return;
+    window.localStorage.setItem(
+      REMEMBER_ME_KEY,
+      rememberMe ? "true" : "false"
+    );
+
+    if (rememberMe) {
+      window.localStorage.setItem(
+        REMEMBERED_EMAIL_KEY,
+        cleanEmail
+      );
+    } else {
+      window.localStorage.removeItem(
+        REMEMBERED_EMAIL_KEY
+      );
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
-      password,
-    });
+    const { error } =
+      await supabase.auth.signInWithPassword({
+        email: cleanEmail,
+        password,
+      });
 
     if (error) {
-      setErrorMessage("Invalid email or password. Please try again.");
+      setErrorMessage(
+        "Invalid email or password. Please try again."
+      );
       setIsLoading(false);
       return;
     }
 
-    router.push("/dashboard");
+    router.replace("/dashboard");
     router.refresh();
   };
 
@@ -50,14 +107,19 @@ export default function LoginPage() {
       title="Welcome back"
       subtitle="Sign in to access your OnTrack workspace."
     >
-      <form onSubmit={handleLogin} className="space-y-5">
+      <form
+        onSubmit={handleLogin}
+        className="space-y-5"
+      >
         <TextInput
           label="Work email"
           type="email"
           name="email"
           placeholder="you@company.com"
           value={email}
-          onChange={(event) => setEmail(event.target.value)}
+          onChange={(event) =>
+            setEmail(event.target.value)
+          }
           required
         />
 
@@ -67,18 +129,21 @@ export default function LoginPage() {
             name="password"
             placeholder="Enter your password"
             value={password}
-            onChange={(event) => setPassword(event.target.value)}
+            onChange={(event) =>
+              setPassword(event.target.value)
+            }
             required
           />
 
           <div className="flex items-center justify-between gap-4">
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-600">
               <input
                 type="checkbox"
                 checked={rememberMe}
-                onChange={(event) => setRememberMe(event.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 accent-[#0A3C86]"
+                onChange={handleRememberMeChange}
+                className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-[#0A3C86]"
               />
+
               Remember me
             </label>
 
@@ -106,7 +171,8 @@ export default function LoginPage() {
         </button>
 
         <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-slate-600">
-          Access is based on your assigned role: Employee, Manager, or Admin.
+          Access is based on your assigned role:
+          Employee, Manager, or Admin.
         </div>
       </form>
     </AuthShell>
