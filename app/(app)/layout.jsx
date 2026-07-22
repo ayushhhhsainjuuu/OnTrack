@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, CalendarRange, CheckSquare, Settings, Bell, Menu, FolderKanban } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
-const nav = [
+const CAN_VIEW_PROJECTS_ROLES = ["owner", "general manager (gm)"];
+
+const baseNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/projects", label: "Projects", icon: FolderKanban },
+  { href: "/projects", label: "Projects", icon: FolderKanban, roles: CAN_VIEW_PROJECTS_ROLES },
   { href: "/schedule", label: "Schedule & Leave", icon: CalendarRange },
   { href: "/task", label: "Tasks", icon: CheckSquare },
   { href: "/settings", label: "Settings", icon: Settings },
@@ -16,6 +19,20 @@ const nav = [
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [canViewProjects, setCanViewProjects] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const role = (
+        data?.user?.user_metadata?.role ||
+        data?.user?.app_metadata?.role ||
+        ""
+      ).toLowerCase();
+      setCanViewProjects(CAN_VIEW_PROJECTS_ROLES.includes(role));
+    });
+  }, []);
+
+  const nav = baseNav.filter((item) => !item.roles || canViewProjects);
 
   return (
     <div className="min-h-screen bg-[#f8fafc]">

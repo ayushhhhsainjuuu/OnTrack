@@ -43,6 +43,8 @@ function UserSelect({ label, value, onChange, users, required }) {
   );
 }
 
+const CAN_VIEW_PROJECTS_ROLES = ["owner", "general manager (gm)"];
+
 export default function ProjectsPage() {
   const [form, setForm] = useState({
     name: "",
@@ -54,6 +56,7 @@ export default function ProjectsPage() {
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [status, setStatus] = useState({ loading: false, error: "", success: "" });
+  const [authorized, setAuthorized] = useState(null); // null = checking, true/false = resolved
 
   async function loadProjects() {
     try {
@@ -76,14 +79,19 @@ export default function ProjectsPage() {
   }
 
   useEffect(() => {
-    loadProjects();
-    loadUsers();
-    // default the manager field to the current logged-in user
     supabase.auth.getUser().then(({ data }) => {
+      const role = (
+        data?.user?.user_metadata?.role ||
+        data?.user?.app_metadata?.role ||
+        ""
+      ).toLowerCase();
+      setAuthorized(CAN_VIEW_PROJECTS_ROLES.includes(role));
       if (data?.user) {
         setForm((f) => ({ ...f, account_manager_id: f.account_manager_id || data.user.id }));
       }
     });
+    loadProjects();
+    loadUsers();
   }, []);
 
   async function handleSubmit(e) {
@@ -117,6 +125,26 @@ export default function ProjectsPage() {
     } catch {
       setStatus({ loading: false, error: "Network error, please try again.", success: "" });
     }
+  }
+
+  if (authorized === null) {
+    return null;
+  }
+
+  if (authorized === false) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Projects</p>
+          <h1 className="text-2xl font-bold text-gray-900 mt-0.5">Projects</h1>
+        </div>
+        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+          <p className="text-sm text-gray-600">
+            You don&apos;t have permission to view this page. Projects are only visible to Owner and General Manager (GM) users.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
