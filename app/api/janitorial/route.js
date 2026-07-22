@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 
 
 // Creates a new janitorial user in the users table and assigns them 
@@ -16,6 +16,8 @@ export async function POST(request) {
         { status: 400 }
       )
     }
+
+    const supabase = await createClient()
 
     // Check if a user with this email already exists
     const { data: existingUser } = await supabase
@@ -68,6 +70,7 @@ export async function POST(request) {
 // Returns all users with the role "Cleaner" along with their assigned work site info.
 export async function GET() {
   try {
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('account_members')
       .select(`

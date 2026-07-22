@@ -3,10 +3,11 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, CalendarRange, CheckSquare, Settings, Bell, Menu } from "lucide-react";
+import { LayoutDashboard, CalendarRange, CheckSquare, Settings, Bell, Menu, FolderKanban } from "lucide-react";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/projects", label: "Projects", icon: FolderKanban },
   { href: "/schedule", label: "Schedule & Leave", icon: CalendarRange },
   { href: "/task", label: "Tasks", icon: CheckSquare },
   { href: "/settings", label: "Settings", icon: Settings },

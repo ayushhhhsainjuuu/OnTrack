@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { ChevronLeft, ChevronRight, Umbrella, Plus, CheckCircle2, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight, Umbrella, Plus, CheckCircle2, Clock, CalendarPlus } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 const week = [
   { day: "MON", date: 9,  role: "Server", color: "text-blue-600",   time: "9:00 AM", end: "to 5:00 PM" },
@@ -25,8 +26,24 @@ const requests = [
   { type: "Annual Leave", range: "Jul 4 – Jul 7 · 4 days",   submitted: "Jun 8", status: "Pending" },
 ];
 
+const CAN_CREATE_SCHEDULE_ROLES = ["foreman", "lead"];
+
 export default function SchedulePage() {
   const [tab, setTab] = useState("schedule");
+  const [canCreateSchedule, setCanCreateSchedule] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const role = (
+        data?.user?.user_metadata?.role ||
+        data?.user?.app_metadata?.role ||
+        ""
+      ).toLowerCase();
+      setCanCreateSchedule(CAN_CREATE_SCHEDULE_ROLES.includes(role));
+    });
+  }, []);
+
+  const tabs = canCreateSchedule ? ["schedule", "leave", "manage"] : ["schedule", "leave"];
 
   return (
     <div className="space-y-6">
@@ -37,7 +54,7 @@ export default function SchedulePage() {
 
       {/* Tabs */}
       <div className="inline-flex rounded-xl bg-gray-100 p-1">
-        {["schedule", "leave"].map((t) => (
+        {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -45,7 +62,7 @@ export default function SchedulePage() {
               tab === t ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"
             }`}
           >
-            {t === "schedule" ? "My Schedule" : "Leave"}
+            {t === "schedule" ? "My Schedule" : t === "leave" ? "Leave" : "Create Schedule"}
           </button>
         ))}
       </div>
@@ -107,7 +124,7 @@ export default function SchedulePage() {
             ))}
           </div>
         </>
-      ) : (
+      ) : tab === "leave" ? (
         <>
           {/* Leave balances */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -160,7 +177,182 @@ export default function SchedulePage() {
             })}
           </div>
         </>
+      ) : (
+        <ManageSchedules />
       )}
+    </div>
+  );
+}
+
+function Field({ label, value, onChange, placeholder, type = "text", required }) {
+  return (
+    <label className="block">
+      <span className="text-xs font-medium text-gray-500">{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+        className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </label>
+  );
+}
+
+function ManageSchedules() {
+  const [form, setForm] = useState({
+    user_id: "",
+    account_id: "",
+    project_id: "",
+    start_time: "",
+    end_time: "",
+    notes: "",
+  });
+  const [schedules, setSchedules] = useState([]);
+  const [status, setStatus] = useState({ loading: false, error: "", success: "" });
+
+  async function loadSchedules() {
+    try {
+      const res = await fetch("/api/schedules");
+      const json = await res.json();
+      if (res.ok) setSchedules(json.schedules || []);
+    } catch {
+      // ignore load errors, form still usable
+    }
+  }
+
+  useEffect(() => {
+    loadSchedules();
+  }, []);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setStatus({ loading: true, error: "", success: "" });
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      setStatus({ loading: false, error: "You must be logged in.", success: "" });
+      return;
+    }
+
+    const payload = {
+      user_id: form.user_id.trim(),
+      created_by: user.id,
+      account_id: form.account_id.trim() || undefined,
+      project_id: form.project_id.trim() || undefined,
+      start_time: form.start_time,
+      end_time: form.end_time,
+      notes: form.notes.trim() || undefined,
+    };
+
+    try {
+      const res = await fetch("/api/schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const json = await res.json();
+
+      if (!res.ok) {
+        setStatus({ loading: false, error: json.error || "Failed to create schedule.", success: "" });
+        return;
+      }
+
+      setStatus({ loading: false, error: "", success: "Schedule created." });
+      setForm({ user_id: "", account_id: "", project_id: "", start_time: "", end_time: "", notes: "" });
+      loadSchedules();
+    } catch {
+      setStatus({ loading: false, error: "Network error, please try again.", success: "" });
+    }
+  }
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm space-y-4">
+        <h2 className="text-lg font-bold text-gray-900">Create Schedule</h2>
+        <p className="text-xs text-gray-500">
+          Only Foreman/Lead users can create schedules. Requires either an account or project ID.
+        </p>
+
+        {status.error && (
+          <div className="rounded-lg bg-red-50 text-red-700 text-sm px-3 py-2">{status.error}</div>
+        )}
+        {status.success && (
+          <div className="rounded-lg bg-emerald-50 text-emerald-700 text-sm px-3 py-2">{status.success}</div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field
+            label="Assignee user ID"
+            value={form.user_id}
+            onChange={(v) => setForm((f) => ({ ...f, user_id: v }))}
+            placeholder="UUID of user being scheduled"
+            required
+          />
+          <Field
+            label="Account ID (optional)"
+            value={form.account_id}
+            onChange={(v) => setForm((f) => ({ ...f, account_id: v }))}
+            placeholder="UUID"
+          />
+          <Field
+            label="Project ID (optional)"
+            value={form.project_id}
+            onChange={(v) => setForm((f) => ({ ...f, project_id: v }))}
+            placeholder="UUID"
+          />
+          <Field
+            label="Notes (optional)"
+            value={form.notes}
+            onChange={(v) => setForm((f) => ({ ...f, notes: v }))}
+            placeholder="Shift notes"
+          />
+          <Field
+            label="Start time"
+            type="datetime-local"
+            value={form.start_time}
+            onChange={(v) => setForm((f) => ({ ...f, start_time: v }))}
+            required
+          />
+          <Field
+            label="End time"
+            type="datetime-local"
+            value={form.end_time}
+            onChange={(v) => setForm((f) => ({ ...f, end_time: v }))}
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={status.loading}
+          className="inline-flex items-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1d4ed8] transition disabled:opacity-50"
+        >
+          <CalendarPlus size={16} /> {status.loading ? "Creating..." : "Create Schedule"}
+        </button>
+      </form>
+
+      <div>
+        <h2 className="text-lg font-bold text-gray-900 mb-3">All Schedules</h2>
+        <div className="rounded-2xl border border-gray-200 bg-white shadow-sm divide-y divide-gray-100">
+          {schedules.length === 0 && (
+            <p className="px-5 py-4 text-sm text-gray-500">No schedules yet.</p>
+          )}
+          {schedules.map((s) => (
+            <div key={s.id} className="px-5 py-4 text-sm">
+              <p className="font-semibold text-gray-900">
+                {s.status} · {new Date(s.start_time).toLocaleString()} → {new Date(s.end_time).toLocaleString()}
+              </p>
+              <p className="text-xs text-gray-500">
+                User: {s.user_id}
+                {s.account_id ? ` · Account: ${s.account_id}` : ""}
+                {s.project_id ? ` · Project: ${s.project_id}` : ""}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
