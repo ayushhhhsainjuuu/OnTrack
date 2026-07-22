@@ -1,0 +1,20 @@
+FROM node:22-alpine AS deps
+WORKDIR /app
+COPY package.json ./
+RUN npm install --omit=dev
+
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+ENV PORT=4001
+
+RUN addgroup --system --gid 1001 nodejs \
+    && adduser --system --uid 1001 express
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --chown=express:nodejs . .
+
+USER express
+EXPOSE 4001
+CMD ["node", "index.js"]
