@@ -25,9 +25,24 @@ app.get("/leave", async (req, res) => {
 
 // Submit a leave request
 app.post("/leave", async (req, res) => {
+  const { user_id, leave_type, start_date, end_date, reason } = req.body;
+
+  if (!user_id || !leave_type || !start_date || !end_date || !reason) {
+    return res.status(400).json({
+      error: "user_id, leave_type, start_date, end_date, and reason are required.",
+    });
+  }
+
   const { data, error } = await supabase
     .from("leave_requests")
-    .insert({ ...req.body, status: "pending" })
+    .insert({
+      user_id,
+      leave_type,
+      start_date,
+      end_date,
+      reason,
+      status: "pending",
+    })
     .select();
   if (error) return res.status(500).json({ error: error.message });
   res.status(201).json(data);
