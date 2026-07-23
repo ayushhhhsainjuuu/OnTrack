@@ -33,6 +33,12 @@ app.post("/leave", async (req, res) => {
     });
   }
 
+  if (new Date(end_date) < new Date(start_date)) {
+    return res.status(400).json({
+      error: "end_date cannot be before start_date.",
+    });
+  }
+
   const { data, error } = await supabase
     .from("leave_requests")
     .insert({
