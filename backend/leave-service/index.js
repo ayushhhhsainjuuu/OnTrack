@@ -100,7 +100,24 @@ app.patch("/leave/:id", async (req, res) => {
     .eq("id", req.params.id)
     .select();
   if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+
+  const decidedRequest = data?.[0];
+  let conflictWarning = null;
+
+  if (decidedRequest && req.body.status === "approved") {
+    const { data: conflictingSchedules, error: conflictError } = await supabase
+      .from("schedules")
+      .select("id, start_time, end_time")
+      .eq("user_id", decidedRequest.user_id)
+      .lte("start_time", `${decidedRequest.end_date}T23:59:59`)
+      .gte("end_time", `${decidedRequest.start_date}T00:00:00`);
+
+    if (!conflictError && conflictingSchedules?.length > 0) {
+      conflictWarning = `This employee already has ${conflictingSchedules.length} shift(s) scheduled during the approved leave dates.`;
+    }
+  }
+
+  res.json({ data, conflictWarning });
 });
 
 app.listen(PORT, () => console.log(`leave-service running on ${PORT}`));
