@@ -117,6 +117,17 @@ app.patch("/leave/:id", async (req, res) => {
     }
   }
 
+  if (decidedRequest && ["approved", "rejected"].includes(req.body.status)) {
+    await supabase.from("notifications").insert({
+      user_id: decidedRequest.user_id,
+      type: req.body.status === "approved" ? "leave_approved" : "leave_rejected",
+      message:
+        req.body.status === "approved"
+          ? `Your ${decidedRequest.leave_type} request for ${decidedRequest.start_date} to ${decidedRequest.end_date} was approved.`
+          : `Your ${decidedRequest.leave_type} request for ${decidedRequest.start_date} to ${decidedRequest.end_date} was rejected.`,
+    });
+  }
+
   res.json({ data, conflictWarning });
 });
 
