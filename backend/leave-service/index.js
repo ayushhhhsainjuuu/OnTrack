@@ -48,6 +48,32 @@ app.post("/leave", async (req, res) => {
   res.status(201).json(data);
 });
 
+// Cancel a pending leave request
+app.patch("/leave/:id/cancel", async (req, res) => {
+  const { data: existing, error: fetchError } = await supabase
+    .from("leave_requests")
+    .select("id, status")
+    .eq("id", req.params.id)
+    .maybeSingle();
+
+  if (fetchError) return res.status(500).json({ error: fetchError.message });
+  if (!existing) return res.status(404).json({ error: "Leave request not found." });
+
+  if (existing.status !== "pending") {
+    return res.status(400).json({
+      error: "Only pending leave requests can be cancelled.",
+    });
+  }
+
+  const { data, error } = await supabase
+    .from("leave_requests")
+    .update({ status: "cancelled" })
+    .eq("id", req.params.id)
+    .select();
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 // Approve / reject
 app.patch("/leave/:id", async (req, res) => {
   const { data, error } = await supabase
