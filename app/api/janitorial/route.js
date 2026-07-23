@@ -7,12 +7,12 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(request) {
   try {
-    const { full_name, email, phone, password_hash, account_id } = await request.json()
+    const { full_name, email, phone, password, account_id } = await request.json()
 
     // Validate required fields
-    if (!full_name || !email || !password_hash) {
+    if (!full_name || !email || !password) {
       return NextResponse.json(
-        { error: 'full_name, email, and password_hash are required' },
+        { error: 'full_name, email, and password are required' },
         { status: 400 }
       )
     }
@@ -34,7 +34,7 @@ export async function POST(request) {
     // Insert new user into the users table
     const { data: user, error: userError } = await supabase
       .from('users')
-      .insert({ full_name, email, phone, password_hash })
+      .insert({ full_name, email, phone, password })
       .select()
       .single()
 
