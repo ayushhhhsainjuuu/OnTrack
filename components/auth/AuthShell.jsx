@@ -26,6 +26,7 @@ export default function AuthShell({ title, subtitle, badge, children }) {
 
               <div>
                 <h1 className="text-4xl font-bold tracking-tight">OnTrack</h1>
+
                 <p className="mt-2 text-base text-blue-100">
                   Workforce management made smarter
                 </p>
@@ -33,10 +34,6 @@ export default function AuthShell({ title, subtitle, badge, children }) {
             </div>
 
             <div className="max-w-2xl">
-              <div className="mb-7 inline-flex rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-semibold text-blue-100 shadow-lg backdrop-blur-xl">
-                SAIT Capstone 2026
-              </div>
-
               <h2 className="text-5xl font-bold leading-[1.08] tracking-tight">
                 Manage attendance, scheduling, and workforce activity in one
                 place.
@@ -87,8 +84,10 @@ export default function AuthShell({ title, subtitle, badge, children }) {
                       priority
                     />
                   </div>
+
                   <div>
                     <p className="text-2xl font-bold text-white">OnTrack</p>
+
                     <p className="text-sm text-slate-300">
                       Secure workforce access
                     </p>
@@ -107,6 +106,7 @@ export default function AuthShell({ title, subtitle, badge, children }) {
                   <h2 className="text-4xl font-bold tracking-tight text-slate-950">
                     {title}
                   </h2>
+
                   <p className="mt-3 text-base leading-7 text-slate-500">
                     {subtitle}
                   </p>
