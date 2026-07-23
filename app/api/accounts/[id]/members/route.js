@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@/lib/supabase/server'
 
 // POST /api/accounts/:id/members
 // Assigns an existing user to an account as Lead or Cleaner
@@ -15,6 +15,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: 'role must be Lead or Cleaner' }, { status: 400 })
   }
 
+  const supabase = await createClient()
   const { data, error } = await supabase
     .from('account_members')
     .insert({ account_id, user_id, role, start_date: new Date().toISOString().split('T')[0] })
@@ -31,6 +32,7 @@ export async function POST(request, { params }) {
 export async function GET(_, { params }) {
   const { id: account_id } = await params
 
+  const supabase = await createClient()
   const { data, error } = await supabase
     .from('account_members')
     .select('id, role, start_date, users ( id, full_name, email, phone )')
