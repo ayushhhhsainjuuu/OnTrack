@@ -50,14 +50,26 @@ app.post("/leave", async (req, res) => {
 
 // Cancel a pending leave request
 app.patch("/leave/:id/cancel", async (req, res) => {
+  const { user_id } = req.body;
+
+  if (!user_id) {
+    return res.status(400).json({ error: "user_id is required." });
+  }
+
   const { data: existing, error: fetchError } = await supabase
     .from("leave_requests")
-    .select("id, status")
+    .select("id, status, user_id")
     .eq("id", req.params.id)
     .maybeSingle();
 
   if (fetchError) return res.status(500).json({ error: fetchError.message });
   if (!existing) return res.status(404).json({ error: "Leave request not found." });
+
+  if (existing.user_id !== user_id) {
+    return res.status(403).json({
+      error: "You can only cancel your own leave requests.",
+    });
+  }
 
   if (existing.status !== "pending") {
     return res.status(400).json({
