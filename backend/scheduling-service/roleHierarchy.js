@@ -1,4 +1,4 @@
-const ROLE_RANK = {
+export const ROLE_RANK = {
   Owner: 4,
   "General Manager (GM)": 4,
   "Project Manager": 3,
@@ -8,11 +8,9 @@ const ROLE_RANK = {
   Cleaner: 1,
 };
 
-function canManage(actingRole, targetRole) {
+export function canManage(actingRole, targetRole) {
   const actingRank = ROLE_RANK[actingRole] || 0;
   const targetRank = ROLE_RANK[targetRole] || 0;
 
   return actingRank > targetRank;
 }
-
-module.exports = { ROLE_RANK, canManage };

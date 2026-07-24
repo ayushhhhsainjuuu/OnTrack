@@ -1,4 +1,4 @@
-const supabase = require("../config/supabaseClient");
+import { supabase } from "./db.js";
 
 function formatScheduleTime(schedule) {
   const start = new Date(schedule.start_time);
@@ -65,7 +65,7 @@ async function getScheduleManagers(schedule) {
   return Array.from(managerIds);
 }
 
-async function triggerSchedulePublished(schedule) {
+export async function triggerSchedulePublished(schedule) {
   await insertNotification({
     userId: schedule.user_id,
     type: "schedule_published",
@@ -75,7 +75,7 @@ async function triggerSchedulePublished(schedule) {
   });
 }
 
-async function triggerScheduleCancelled(schedule, reason) {
+export async function triggerScheduleCancelled(schedule, reason) {
   const reasonText = reason ? ` Reason: ${reason}` : "";
 
   await insertNotification({
@@ -101,7 +101,7 @@ async function triggerScheduleCancelled(schedule, reason) {
   );
 }
 
-async function triggerScheduleUpdated(schedule) {
+export async function triggerScheduleUpdated(schedule) {
   await insertNotification({
     userId: schedule.user_id,
     type: "schedule_updated",
@@ -110,9 +110,3 @@ async function triggerScheduleUpdated(schedule) {
     )}.`,
   });
 }
-
-module.exports = {
-  triggerSchedulePublished,
-  triggerScheduleCancelled,
-  triggerScheduleUpdated,
-};
