@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { requireAuth, requireManagerRole } from "./auth.js";
 import { generateSummary } from "./claudeClient.js";
+import { fetchSummaryContext } from "./dataFetch.js";
 
 const app = express();
 app.use(cors());
@@ -12,6 +13,32 @@ const PORT = process.env.PORT || 4005;
 app.get("/health", (req, res) => res.json({ status: "ok", service: "ai" }));
 
 app.use("/ai", requireAuth, requireManagerRole);
+
+// Returns the raw, unanonymized, unformatted context for a given date
+// range, scoped to what the requesting manager can see. Intended for
+// OC-106 (PII anonymization) and OC-107 (JSON formatting) to consume,
+// and useful on its own for verifying scope/date filtering while those
+// land.
+app.get("/ai/context", async (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) {
+    return res
+      .status(400)
+      .json({ error: "startDate and endDate query params are required." });
+  }
+
+  try {
+    const context = await fetchSummaryContext({
+      user: req.user,
+      startDate,
+      endDate,
+    });
+    res.json(context);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Accepts context data that has already been fetched from Supabase and
 // anonymized/formatted upstream (see the data-fetch, PII anonymization,
