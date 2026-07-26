@@ -4,6 +4,7 @@ import { requireAuth, requireManagerRole } from "./auth.js";
 import { generateSummary } from "./claudeClient.js";
 import { fetchSummaryContext } from "./dataFetch.js";
 import { anonymizeContext } from "./anonymize.js";
+import { formatContext } from "./formatContext.js";
 
 const app = express();
 app.use(cors());
@@ -36,7 +37,8 @@ app.get("/ai/context", async (req, res) => {
       endDate,
     });
     const anonymized = anonymizeContext(context);
-    res.json(anonymized);
+    const formatted = formatContext(anonymized);
+    res.json(formatted);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
