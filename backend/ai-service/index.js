@@ -3,6 +3,7 @@ import cors from "cors";
 import { requireAuth, requireManagerRole } from "./auth.js";
 import { generateSummary } from "./claudeClient.js";
 import { fetchSummaryContext } from "./dataFetch.js";
+import { anonymizeContext } from "./anonymize.js";
 
 const app = express();
 app.use(cors());
@@ -34,7 +35,8 @@ app.get("/ai/context", async (req, res) => {
       startDate,
       endDate,
     });
-    res.json(context);
+    const anonymized = anonymizeContext(context);
+    res.json(anonymized);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
