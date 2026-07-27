@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 // Same client-side Supabase instance you used in AIQueryBox — adjust path if needed.
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 import {
   BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,

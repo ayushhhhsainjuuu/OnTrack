@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const OFFICE_LAT = 0;
-const OFFICE_LNG = 0;
-const GEOFENCE_RADIUS_METERS = 0;
+const OFFICE_LAT =  -114.08924507401676;
+const OFFICE_LNG = 51.06474590583107;
+const GEOFENCE_RADIUS_METERS = 1000; // 100 meters
 
 const mockAttendance = [
   { date: "Mon Jun 9", clockIn: "9:02 AM", clockOut: "5:03 PM", hours: "8.0", status: "On Time" },
