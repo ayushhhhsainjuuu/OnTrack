@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const OFFICE_LAT = 0;
-const OFFICE_LNG = 0;
-const GEOFENCE_RADIUS_METERS = 0;
+const OFFICE_LAT = 51.06474583312273;
+const OFFICE_LNG = -114.08930946420794;
+const GEOFENCE_RADIUS_METERS = 1000;
 
 const mockAttendance = [
   { date: "Mon Jun 9", clockIn: "9:02 AM", clockOut: "5:03 PM", hours: "8.0", status: "On Time" },
@@ -143,6 +143,7 @@ export default function EmployeeDashboard() {
   const [mealLog, setMealLog] = useState([]);
   const [gpsState, setGpsState] = useState("loading");
   const [distanceMeters, setDistanceMeters] = useState(null);
+  const [now, setNow] = useState(() => Date.now());
 
   const evaluateGeofence = useCallback((lat, lng) => {
     const distance = haversineDistance(lat, lng, OFFICE_LAT, OFFICE_LNG);
@@ -174,13 +175,28 @@ export default function EmployeeDashboard() {
     return () => navigator.geolocation.clearWatch(watchId);
   }, [evaluateGeofence]);
 
+  // Tick every second while a shift is active so the worked-time counter
+  // actually updates instead of freezing at the value from the moment
+  // of clocking in (Date.now() alone doesn't trigger re-renders).
+  useEffect(() => {
+    if (!clockedIn) return;
+
+    const intervalId = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [clockedIn]);
+
   const isInsideGeofence = gpsState === "inside";
 
   function handleClock() {
     if (!isInsideGeofence) return;
 
     if (!clockedIn) {
-      setClockInTime(new Date());
+      const start = new Date();
+      setClockInTime(start);
+      setNow(start.getTime());
       setClockedIn(true);
       setOnMealBreak(false);
       setMealStartTime(null);
@@ -222,11 +238,11 @@ export default function EmployeeDashboard() {
   function getShiftLabel() {
     if (!clockInTime) return null;
 
-    const elapsedMs = Date.now() - clockInTime.getTime();
+    const elapsedMs = now - clockInTime.getTime();
     const totalMealMs =
       mealLog.reduce((total, meal) => total + (meal.end - meal.start), 0) +
       (onMealBreak && mealStartTime
-        ? Date.now() - mealStartTime.getTime()
+        ? now - mealStartTime.getTime()
         : 0);
 
     const worked = Math.max(0, elapsedMs - totalMealMs);
@@ -333,6 +349,12 @@ export default function EmployeeDashboard() {
                   ? "You're clocked in"
                   : "You're clocked out"}
             </p>
+
+            {clockedIn && (
+              <p className="text-xs text-gray-500 dark:text-slate-400">
+                Clocked in at {fmt(clockInTime)}
+              </p>
+            )}
 
             <p className="text-sm text-gray-500 dark:text-slate-400">
               {onMealBreak
