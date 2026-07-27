@@ -32,7 +32,7 @@ export async function POST(request) {
   }
   if (!ALLOWED_ROLES.includes((requester.system_role || '').toLowerCase())) {
     return NextResponse.json(
-      { error: 'Only users with the Owner or General Manager (GM) role can create projects' },
+      { error: 'Only the Owner or General Manager (GM) can create projects' },
       { status: 403 }
     )
   }
@@ -49,14 +49,37 @@ export async function POST(request) {
 }
 
 // GET /api/projects
-// Returns all specialty projects
+// Returns all specialty projects, plus the list of active users (for
+// picking an account manager). Requires an authenticated caller.
 export async function GET() {
-  const supabase = await createClient()
-  const { data, error } = await supabase
-    .from('projects')
-    .select('*')
+  try {
+    const supabase = await createClient()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'You must be logged in' }, { status: 401 })
+    }
 
-  return NextResponse.json({ projects: data }, { status: 200 })
+    const { data: projects, error: projectsError } = await supabase
+      .from('projects')
+      .select('*')
+
+    if (projectsError) {
+      return NextResponse.json({ error: projectsError.message }, { status: 500 })
+    }
+
+    const { data: managers, error: fetchError } = await supabase
+      .from('users')
+      .select('id, name, system_role')
+      .eq('is_active', true)
+      .order('name', { ascending: true })
+
+    if (fetchError) {
+      return NextResponse.json({ error: fetchError.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ projects, managers }, { status: 200 })
+  } catch (err) {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
 }
