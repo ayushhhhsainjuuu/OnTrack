@@ -28,9 +28,18 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           NEXT_PUBLIC_API_URL: https://ontrack-server.azurewebsites.net
 
+      - name: Assemble standalone output
+        working-directory: ./client
+        run: |
+          mkdir -p deploy
+          cp -r .next/standalone/. deploy/
+          cp -r public deploy/public
+          mkdir -p deploy/.next
+          cp -r .next/static deploy/.next/static
+
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
           app-name: ontrack-client
           publish-profile: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
-          package: ./client
+          package: ./client/deploy
