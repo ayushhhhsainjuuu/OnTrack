@@ -9,7 +9,7 @@ import PasswordInput from "@/components/auth/PasswordInput";
 import {
   REMEMBER_ME_KEY,
   supabase,
-} from "@/client/lib/supabase";
+} from "@/lib/supabase";
 
 const REMEMBERED_EMAIL_KEY = "ontrack-remembered-email";
 
