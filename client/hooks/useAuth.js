@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/client/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
 function formatRole(role) {
   if (!role) return "Employee";
@@ -13,9 +13,7 @@ function formatRole(role) {
 }
 
 function getRoleFromUser(user) {
-  const metadataRole =
-    user?.user_metadata?.role ||
-    user?.app_metadata?.role;
+  const metadataRole = user?.user_metadata?.role || user?.app_metadata?.role;
 
   if (metadataRole) {
     return formatRole(metadataRole);

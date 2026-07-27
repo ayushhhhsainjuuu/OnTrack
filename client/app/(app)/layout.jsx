@@ -18,7 +18,7 @@ import {
   Clock3,
   X,
 } from "lucide-react";
-import useAuth from "@/client/hooks/useAuth";
+import useAuth from "@/hooks/useAuth";
 
 const baseNav = [
   {
