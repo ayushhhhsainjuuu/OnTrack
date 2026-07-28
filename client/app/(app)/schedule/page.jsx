@@ -8,7 +8,11 @@ import {
 } from "lucide-react";
 
 import useAuth from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import WeeklyCalender from "@/components/schedule/WeeklyCalender";
+import CreateScheduleForm, {
+  getAssignableRolesFor,
+} from "@/components/schedule/CreateScheduleForm";
 import LeaveForm from "@/components/leave/LeaveForm";
 import LeaveTable from "@/components/leave/LeaveTable";
 import ManagerReviewQueue from "@/components/leave/ManagerReviewQueue";
@@ -417,6 +421,22 @@ export default function SchedulePage() {
     normalizedRole.includes("general manager");
 
   /*
+    Hierarchy-based permission: only roles that can manage at least
+    one other role (per getAssignableRolesFor) see the Create
+    Schedule tab.
+  */
+  const assignableRoles = useMemo(
+    () => getAssignableRolesFor(role),
+    [role]
+  );
+
+  const canCreateSchedules = assignableRoles.length > 0;
+
+  const availableTabs = canCreateSchedules
+    ? ["schedule", "create", "leave"]
+    : ["schedule", "leave"];
+
+  /*
     Load shared leave requests after Supabase has loaded
     the currently authenticated user.
   */
@@ -600,6 +620,16 @@ export default function SchedulePage() {
       isCancelledRequest = true;
     };
   }, [isLoading, user, weekStart]);
+
+  /*
+    If the user's role no longer permits scheduling others (e.g.
+    role changed), fall back to the schedule tab.
+  */
+  useEffect(() => {
+    if (tab === "create" && !canCreateSchedules) {
+      setTab("schedule");
+    }
+  }, [tab, canCreateSchedules]);
 
   /*
     A manager sees requests from other employees.
@@ -881,7 +911,7 @@ export default function SchedulePage() {
       </div>
 
       <div className="inline-flex rounded-xl bg-gray-100 p-1 dark:bg-slate-800">
-        {["schedule", "leave"].map(
+        {availableTabs.map(
           (item) => (
             <button
               key={item}
@@ -895,7 +925,9 @@ export default function SchedulePage() {
             >
               {item === "schedule"
                 ? "My Schedule"
-                : "Leave"}
+                : item === "create"
+                  ? "Create Schedule"
+                  : "Leave"}
             </button>
           )
         )}
@@ -922,6 +954,20 @@ export default function SchedulePage() {
             )
           }
         />
+      ) : tab === "create" ? (
+        <div className="space-y-6">
+          {successMessage && (
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <CheckCircle2 size={19} />
+              {successMessage}
+            </div>
+          )}
+
+          <CreateScheduleForm
+            role={role}
+            onSuccess={showSuccessMessage}
+          />
+        </div>
       ) : (
         <div className="space-y-6">
           {successMessage && (
