@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ROLE_LABELS, ROLE_COLORS, ROLE_NAV } from "@/client/utils/roles";
+import { ROLE_LABELS, ROLE_COLORS, ROLE_NAV } from "@/utils/roles";
 
 const icons = {
   home: (

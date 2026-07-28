@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/client/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 
 // Creates a new janitorial user in the users table and assigns them 

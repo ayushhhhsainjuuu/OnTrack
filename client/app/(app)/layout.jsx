@@ -16,6 +16,7 @@ import {
   ClipboardCheck,
   ClipboardClock,
   Clock3,
+  BarChart3,
   X,
 } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
@@ -30,6 +31,12 @@ const baseNav = [
     href: "/schedule",
     label: "Schedule & Leave",
     icon: CalendarRange,
+  },
+ 
+  {
+    href: "/analytics",
+    label: "Analytics",
+    icon: BarChart3,
   },
   {
     href: "/settings",
