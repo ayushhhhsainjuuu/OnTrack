@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import { supabase } from "./db.js";
 import { requireAuth, requireSchedulePermission } from "./auth.js";
+import { listAssignableEmployees } from "./authUsers.js";
 import {
   triggerSchedulePublished,
   triggerScheduleCancelled,
@@ -24,6 +25,26 @@ app.get("/schedules", async (req, res) => {
   const { data, error } = await supabase.from("schedules").select("*");
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
+});
+
+// GET /schedules/assignable-employees?roles=Cleaner,Foreman,Lead
+// Used by the frontend's Create Schedule employee picker.
+app.get("/schedules/assignable-employees", async (req, res) => {
+  const roles = String(req.query.roles || "")
+    .split(",")
+    .map((role) => role.trim())
+    .filter(Boolean);
+
+  if (roles.length === 0) {
+    return res.json([]);
+  }
+
+  try {
+    const employees = await listAssignableEmployees(roles);
+    res.json(employees);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post(

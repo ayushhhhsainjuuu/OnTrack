@@ -37,10 +37,20 @@ async function forwardToSchedulingService(path, options) {
 }
 
 // GET /api/schedule
-// Proxies to GET {SCHEDULING_SERVICE_URL}/schedules, forwarding any query params
-// (e.g. user_id, account_id, project_id, status, start, end) and the caller's auth token.
 export async function GET(request) {
-  const { search } = new URL(request.url)
+  const { search, searchParams } = new URL(request.url)
+
+  if (searchParams.get('resource') === 'assignable-employees') {
+    const roles = searchParams.get('roles') || ''
+
+    return forwardToSchedulingService(
+      `/schedules/assignable-employees?roles=${encodeURIComponent(roles)}`,
+      {
+        method: 'GET',
+        headers: buildForwardHeaders(request),
+      }
+    )
+  }
 
   return forwardToSchedulingService(`/schedules${search}`, {
     method: 'GET',

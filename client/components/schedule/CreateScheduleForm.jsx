@@ -10,6 +10,7 @@ const cardClass =
 
 const initialScheduleForm = {
   employeeId: "",
+  accountId: "",
   date: "",
   startTime: "",
   endTime: "",
@@ -55,6 +56,9 @@ export default function CreateScheduleForm({ role, onSuccess }) {
   const [assignableEmployeesLoading, setAssignableEmployeesLoading] =
     useState(false);
 
+  const [scheduleAccounts, setScheduleAccounts] =
+    useState([]);
+
   const [createScheduleError, setCreateScheduleError] =
     useState("");
 
@@ -63,7 +67,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
 
   /*
     Loads the employees this user is allowed to schedule, based on
-    the hierarchy above.
+    the hierarchy above. 
   */
   useEffect(() => {
     if (assignableRoles.length === 0) {
@@ -76,17 +80,32 @@ export default function CreateScheduleForm({ role, onSuccess }) {
       setAssignableEmployeesLoading(true);
 
       try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("id, full_name, system_role")
-          .eq("is_active", true)
-          .in("system_role", assignableRoles);
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        const response = await fetch(
+          `/api/schedule?resource=assignable-employees&roles=${encodeURIComponent(
+            assignableRoles.join(",")
+          )}`,
+          {
+            headers: session?.access_token
+              ? { Authorization: `Bearer ${session.access_token}` }
+              : {},
+          }
+        );
+
+        const data = await response.json().catch(() => null);
 
         if (isCancelledRequest) {
           return;
         }
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error(
+            data?.error || "Could not load employees."
+          );
+        }
 
         setAssignableEmployees(data || []);
       } catch (error) {
@@ -110,6 +129,42 @@ export default function CreateScheduleForm({ role, onSuccess }) {
     };
   }, [assignableRoles]);
 
+  /*
+    Loads the sites/accounts a schedule can be assigned to. The
+    database enforces a "schedules_site_required" check constraint,
+    so a site must always be selected when creating a schedule.
+  */
+  useEffect(() => {
+    let isCancelledRequest = false;
+
+    const loadAccounts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("accounts")
+          .select("id, name")
+          .eq("is_active", true);
+
+        if (isCancelledRequest) {
+          return;
+        }
+
+        if (error) throw error;
+
+        setScheduleAccounts(data || []);
+      } catch (error) {
+        if (!isCancelledRequest) {
+          console.error("Could not load sites for scheduling:", error);
+        }
+      }
+    };
+
+    loadAccounts();
+
+    return () => {
+      isCancelledRequest = true;
+    };
+  }, []);
+
   const updateScheduleField = (field, value) => {
     setScheduleForm((current) => ({
       ...current,
@@ -125,15 +180,16 @@ export default function CreateScheduleForm({ role, onSuccess }) {
 
     const {
       employeeId,
+      accountId,
       date,
       startTime,
       endTime,
       notes,
     } = scheduleForm;
 
-    if (!employeeId || !date || !startTime || !endTime) {
+    if (!employeeId || !accountId || !date || !startTime || !endTime) {
       setCreateScheduleError(
-        "Please select an employee, a date, and both shift times."
+        "Please select an employee, a site, a date, and both shift times."
       );
       return;
     }
@@ -170,6 +226,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
         },
         body: JSON.stringify({
           user_id: employeeId,
+          account_id: accountId,
           start_time: startTimeIso,
           end_time: endTimeIso,
           notes: notes.trim() || undefined,
@@ -213,42 +270,80 @@ export default function CreateScheduleForm({ role, onSuccess }) {
         onSubmit={handleCreateScheduleSubmit}
         className="mt-5 space-y-5"
       >
-        <div>
-          <label
-            htmlFor="create-schedule-employee"
-            className="text-sm font-semibold text-gray-700 dark:text-slate-200"
-          >
-            Employee
-          </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="create-schedule-employee"
+              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+            >
+              Employee
+            </label>
 
-          <select
-            id="create-schedule-employee"
-            value={scheduleForm.employeeId}
-            onChange={(event) =>
-              updateScheduleField(
-                "employeeId",
-                event.target.value
-              )
-            }
-            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
-          >
-            <option value="">
-              {assignableEmployeesLoading
-                ? "Loading employees..."
-                : assignableEmployees.length === 0
-                ? "No employees available"
-                :"Select an employee"}
-            </option>
-
-            {assignableEmployees.map((employee) => (
-              <option
-                key={employee.id}
-                value={employee.id}
-              >
-                {employee.full_name} — {employee.system_role}
+            <select
+              id="create-schedule-employee"
+              value={scheduleForm.employeeId}
+              onChange={(event) =>
+                updateScheduleField(
+                  "employeeId",
+                  event.target.value
+                )
+              }
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+            >
+              <option value="">
+                {assignableEmployeesLoading
+                  ? "Loading employees..."
+                  : assignableEmployees.length === 0
+                  ? "No employees available"
+                  :"Select an employee"}
               </option>
-            ))}
-          </select>
+
+              {assignableEmployees.map((employee) => (
+                <option
+                  key={employee.id}
+                  value={employee.id}
+                >
+                  {employee.full_name} — {employee.role}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="create-schedule-account"
+              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+            >
+              Site
+            </label>
+
+            <select
+              id="create-schedule-account"
+              value={scheduleForm.accountId}
+              onChange={(event) =>
+                updateScheduleField(
+                  "accountId",
+                  event.target.value
+                )
+              }
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+            >
+              <option value="">
+                {scheduleAccounts.length === 0
+                  ? "No sites available"
+                  : "Select a site"}
+              </option>
+
+              {scheduleAccounts.map((account) => (
+                <option
+                  key={account.id}
+                  value={account.id}
+                >
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
@@ -345,7 +440,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
 
         {createScheduleError && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
-            {createScheduleError}
+            Something went wrong during schedule creation. {createScheduleError}
           </div>
         )}
 
