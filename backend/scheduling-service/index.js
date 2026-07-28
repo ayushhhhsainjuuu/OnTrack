@@ -47,6 +47,41 @@ app.get("/schedules/assignable-employees", async (req, res) => {
   }
 });
 
+// Checks whether a user already has an overlapping (non-cancelled)
+// schedule, or an approved leave request
+async function findSchedulingConflicts({ user_id, start_time, end_time }) {
+  const startDate = start_time.slice(0, 10);
+  const endDate = end_time.slice(0, 10);
+
+  const [
+    { data: overlappingSchedules, error: scheduleError },
+    { data: overlappingLeave, error: leaveError },
+  ] = await Promise.all([
+    supabase
+      .from("schedules")
+      .select("id, start_time, end_time")
+      .eq("user_id", user_id)
+      .not("status", "ilike", "cancelled")
+      .lt("start_time", end_time)
+      .gt("end_time", start_time),
+    supabase
+      .from("leave_requests")
+      .select("id, start_date, end_date")
+      .eq("user_id", user_id)
+      .ilike("status", "approved")
+      .lte("start_date", endDate)
+      .gte("end_date", startDate),
+  ]);
+
+  if (scheduleError) throw new Error(scheduleError.message);
+  if (leaveError) throw new Error(leaveError.message);
+
+  return {
+    overlappingSchedules: overlappingSchedules || [],
+    overlappingLeave: overlappingLeave || [],
+  };
+}
+
 app.post(
   "/schedules",
   requireSchedulePermission((req) => req.body.user_id),
@@ -60,6 +95,33 @@ app.post(
       notes,
       status,
     } = req.body;
+
+    if (!user_id || !start_time || !end_time) {
+      return res.status(400).json({
+        error: "user_id, start_time, and end_time are required.",
+      });
+    }
+
+    try {
+      const { overlappingSchedules, overlappingLeave } =
+        await findSchedulingConflicts({ user_id, start_time, end_time });
+
+      if (overlappingSchedules.length > 0) {
+        return res.status(409).json({
+          error:
+            "This employee already has a schedule that overlaps with the selected time.",
+        });
+      }
+
+      if (overlappingLeave.length > 0) {
+        return res.status(409).json({
+          error:
+            "This employee has approved leave that overlaps with the selected dates.",
+        });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: err.message });
+    }
 
     const { data, error } = await supabase
       .from("schedules")
