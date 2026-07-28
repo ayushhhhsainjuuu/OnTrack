@@ -8,60 +8,71 @@ import {
 } from "lucide-react";
 
 import useAuth from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import WeeklyCalender from "@/components/schedule/WeeklyCalender";
+import CreateScheduleForm, {
+  getAssignableRolesFor,
+} from "@/components/schedule/CreateScheduleForm";
 import LeaveForm from "@/components/leave/LeaveForm";
 import LeaveTable from "@/components/leave/LeaveTable";
 import ManagerReviewQueue from "@/components/leave/ManagerReviewQueue";
 
 const LEAVE_STORAGE_KEY = "ontrack-leave-requests";
 
-const shiftPattern = [
-  {
-    role: "Cleaner",
-    color: "text-blue-600 dark:text-blue-400",
-    time: "9:00 AM",
-    end: "to 5:00 PM",
-    hours: 8,
-  },
-  {
-    role: "Cleaner",
-    color: "text-blue-600 dark:text-blue-400",
-    time: "10:00 AM",
-    end: "to 6:00 PM",
-    hours: 8,
-  },
-  {
-    role: "Cleaner",
-    color: "text-blue-600 dark:text-blue-400",
-    time: "9:00 AM",
-    end: "to 5:00 PM",
-    hours: 8,
-  },
-  {
-    off: true,
-    hours: 0,
-  },
-  {
-    role: "Cleaner",
-    color: "text-blue-600 dark:text-blue-400",
-    time: "10:00 AM",
-    end: "to 6:00 PM",
-    hours: 8,
-    cancelled: true,
-    cancelReason: "Shift cancelled by management.",
-  },
-  {
-    role: "Lead",
-    color: "text-purple-600 dark:text-purple-400",
-    time: "11:00 AM",
-    end: "to 7:00 PM",
-    hours: 8,
-  },
-  {
-    off: true,
-    hours: 0,
-  },
+/*
+  Blue marks an individual-contributor shift (e.g. Cleaner) and
+  purple marks a leadership/supervisory shift (e.g. Lead, Foreman).
+  This mirrors the color meaning the schedule previously used with
+  its mock data, now applied to the logged-in user's real role.
+*/
+const LEADERSHIP_ROLES = [
+  "lead",
+  "foreman",
+  "supervisor",
+  "project manager",
+  "general manager",
+  "owner",
 ];
+
+function getShiftRoleColor(role) {
+  const normalized = normalizeRole(role);
+
+  return LEADERSHIP_ROLES.includes(normalized)
+    ? "text-purple-600 dark:text-purple-400"
+    : "text-blue-600 dark:text-blue-400";
+}
+
+function formatShiftTime(dateValue) {
+  return new Date(dateValue).toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+function buildShiftFromSchedule(schedule, role) {
+  const isCancelled = schedule.status === "cancelled";
+
+  const hours = Math.max(
+    0,
+    Math.round(
+      (new Date(schedule.end_time) - new Date(schedule.start_time)) /
+        3600000
+    )
+  );
+
+  return {
+    role,
+    color: getShiftRoleColor(role),
+    time: formatShiftTime(schedule.start_time),
+    end: `to ${formatShiftTime(schedule.end_time)}`,
+    hours,
+    off: false,
+    cancelled: isCancelled,
+    cancelReason: isCancelled
+      ? schedule.notes || "Shift cancelled by management."
+      : undefined,
+  };
+}
 
 const balances = [
   {
@@ -391,6 +402,12 @@ export default function SchedulePage() {
   const [successMessage, setSuccessMessage] =
     useState("");
 
+  const [scheduleEntries, setScheduleEntries] =
+    useState([]);
+
+  const [scheduleLoading, setScheduleLoading] =
+    useState(true);
+
   const normalizedRole = normalizeRole(role);
 
   /*
@@ -402,6 +419,22 @@ export default function SchedulePage() {
     normalizedRole === "foreman" ||
     normalizedRole === "gm" ||
     normalizedRole.includes("general manager");
+
+  /*
+    Hierarchy-based permission: only roles that can manage at least
+    one other role (per getAssignableRolesFor) see the Create
+    Schedule tab.
+  */
+  const assignableRoles = useMemo(
+    () => getAssignableRolesFor(role),
+    [role]
+  );
+
+  const canCreateSchedules = assignableRoles.length > 0;
+
+  const availableTabs = canCreateSchedules
+    ? ["schedule", "create", "leave"]
+    : ["schedule", "leave"];
 
   /*
     Load shared leave requests after Supabase has loaded
@@ -516,6 +549,89 @@ export default function SchedulePage() {
   }, [allLeaveRequests, user]);
 
   /*
+    Calls the /api/schedule route (proxied to the scheduling
+    microservice) for the currently visible week and keeps only
+    this user's shifts.
+  */
+  useEffect(() => {
+    if (isLoading || !user) {
+      return;
+    }
+
+    let isCancelledRequest = false;
+
+    const loadSchedule = async () => {
+      setScheduleLoading(true);
+
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        const params = new URLSearchParams({
+          user_id: user.id,
+          start: weekStart.toISOString(),
+          end: addDays(weekStart, 6).toISOString(),
+        });
+
+        const response = await fetch(
+          `/api/schedule?${params.toString()}`,
+          {
+            headers: session?.access_token
+              ? { Authorization: `Bearer ${session.access_token}` }
+              : undefined,
+          }
+        );
+
+        const payload = await response.json().catch(() => null);
+
+        if (!response.ok) {
+          throw new Error(
+            payload?.error || "Could not load your schedule."
+          );
+        }
+
+        const schedules = Array.isArray(payload)
+          ? payload
+          : payload?.schedules || [];
+
+        if (!isCancelledRequest) {
+          setScheduleEntries(
+            schedules.filter(
+              (schedule) => schedule.user_id === user.id
+            )
+          );
+        }
+      } catch (error) {
+        if (!isCancelledRequest) {
+          console.error("Could not load schedule:", error);
+          setScheduleEntries([]);
+        }
+      } finally {
+        if (!isCancelledRequest) {
+          setScheduleLoading(false);
+        }
+      }
+    };
+
+    loadSchedule();
+
+    return () => {
+      isCancelledRequest = true;
+    };
+  }, [isLoading, user, weekStart]);
+
+  /*
+    If the user's role no longer permits scheduling others (e.g.
+    role changed), fall back to the schedule tab.
+  */
+  useEffect(() => {
+    if (tab === "create" && !canCreateSchedules) {
+      setTab("schedule");
+    }
+  }, [tab, canCreateSchedules]);
+
+  /*
     A manager sees requests from other employees.
     Their own requests remain in "My leave requests."
   */
@@ -544,8 +660,8 @@ export default function SchedulePage() {
           request.status === "Approved"
       );
 
-    return shiftPattern.map(
-      (shift, index) => {
+    return Array.from({ length: 7 }).map(
+      (_, index) => {
         const fullDate = addDays(
           weekStart,
           index
@@ -591,15 +707,36 @@ export default function SchedulePage() {
           };
         }
 
+        const scheduleForDay = scheduleEntries.find(
+          (schedule) =>
+            sameDate(
+              new Date(schedule.start_time),
+              fullDate
+            )
+        );
+
+        if (scheduleForDay) {
+          return {
+            ...dateInformation,
+            ...buildShiftFromSchedule(
+              scheduleForDay,
+              role
+            ),
+          };
+        }
+
         return {
-          ...shift,
           ...dateInformation,
+          off: true,
+          hours: 0,
         };
       }
     );
   }, [
     weekStart,
     employeeLeaveRequests,
+    scheduleEntries,
+    role,
   ]);
 
   const weekEnd = addDays(weekStart, 6);
@@ -746,7 +883,7 @@ export default function SchedulePage() {
     );
   };
 
-  if (isLoading || !storageReady) {
+  if (isLoading || !storageReady || scheduleLoading) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
@@ -774,7 +911,7 @@ export default function SchedulePage() {
       </div>
 
       <div className="inline-flex rounded-xl bg-gray-100 p-1 dark:bg-slate-800">
-        {["schedule", "leave"].map(
+        {availableTabs.map(
           (item) => (
             <button
               key={item}
@@ -788,7 +925,9 @@ export default function SchedulePage() {
             >
               {item === "schedule"
                 ? "My Schedule"
-                : "Leave"}
+                : item === "create"
+                  ? "Create Schedule"
+                  : "Leave"}
             </button>
           )
         )}
@@ -815,6 +954,20 @@ export default function SchedulePage() {
             )
           }
         />
+      ) : tab === "create" ? (
+        <div className="space-y-6">
+          {successMessage && (
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
+              <CheckCircle2 size={19} />
+              {successMessage}
+            </div>
+          )}
+
+          <CreateScheduleForm
+            role={role}
+            onSuccess={showSuccessMessage}
+          />
+        </div>
       ) : (
         <div className="space-y-6">
           {successMessage && (
