@@ -235,7 +235,9 @@ export default function CreateScheduleForm({ role, onSuccess }) {
             <option value="">
               {assignableEmployeesLoading
                 ? "Loading employees..."
-                : "Select an employee"}
+                : assignableEmployees.length === 0
+                ? "No employees available"
+                :"Select an employee"}
             </option>
 
             {assignableEmployees.map((employee) => (
@@ -247,13 +249,6 @@ export default function CreateScheduleForm({ role, onSuccess }) {
               </option>
             ))}
           </select>
-
-          {!assignableEmployeesLoading &&
-            assignableEmployees.length === 0 && (
-              <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">
-                No employees available for you to schedule.
-              </p>
-            )}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
