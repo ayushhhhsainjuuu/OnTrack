@@ -1,0 +1,20 @@
+name: Deploy Scheduling Service
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/scheduling-service/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-backend-service.yml
+    with:
+      service_name: scheduling-service
+      service_dir: backend/scheduling-service
+      azure_app_name: ontrack-scheduling-service
+    secrets:
+      ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      PUBLISH_PROFILE: ${{ secrets.AZURE_SCHEDULING_SERVICE_PUBLISH_PROFILE }}

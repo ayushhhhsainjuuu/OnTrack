@@ -1,0 +1,20 @@
+name: Deploy Clock Service
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/clock-services/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-backend-service.yml
+    with:
+      service_name: clock-service
+      service_dir: backend/clock-services
+      azure_app_name: ontrack-clock-service
+    secrets:
+      ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      PUBLISH_PROFILE: ${{ secrets.AZURE_CLOCK_SERVICE_PUBLISH_PROFILE }}

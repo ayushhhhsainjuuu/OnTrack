@@ -1,0 +1,55 @@
+name: Deploy Backend Service (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: "Short name, e.g. auth-service"
+        required: true
+        type: string
+      service_dir:
+        description: "Path to the service folder, e.g. backend/auth-services"
+        required: true
+        type: string
+      azure_app_name:
+        description: "Azure Web App (for Containers) name for this service"
+        required: true
+        type: string
+    secrets:
+      ACR_LOGIN_SERVER:
+        required: true
+      ACR_USERNAME:
+        required: true
+      ACR_PASSWORD:
+        required: true
+      PUBLISH_PROFILE:
+        required: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.service_dir }}
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ inputs.service_name }}:${{ github.sha }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ inputs.service_name }}:latest
+
+      - name: Deploy to Azure Web App for Containers
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ inputs.azure_app_name }}
+          publish-profile: ${{ secrets.PUBLISH_PROFILE }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ inputs.service_name }}:${{ github.sha }}

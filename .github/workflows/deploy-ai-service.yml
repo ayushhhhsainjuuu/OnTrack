@@ -1,0 +1,20 @@
+name: Deploy AI Service
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/ai-service/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-backend-service.yml
+    with:
+      service_name: ai-service
+      service_dir: backend/ai-service
+      azure_app_name: ontrack-ai-service
+    secrets:
+      ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      PUBLISH_PROFILE: ${{ secrets.AZURE_AI_SERVICE_PUBLISH_PROFILE }}
