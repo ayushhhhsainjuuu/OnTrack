@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/client/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 // POST /api/projects
 // Creates a new specialty project

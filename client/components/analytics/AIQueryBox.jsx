@@ -3,7 +3,7 @@
 import { useState } from "react";
 // Reuse your existing client-side Supabase instance (the one used for auth).
 // Adjust this path if yours lives somewhere else (e.g. "@/utils/supabase").
-import { supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabase";
 
 // AI microservice base URL. Set NEXT_PUBLIC_AI_SERVICE_URL in your env.
 // Local dev default matches ai-service (PORT 4005).

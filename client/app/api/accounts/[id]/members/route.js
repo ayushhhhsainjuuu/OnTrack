@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/client/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
 // POST /api/accounts/:id/members
 // Assigns an existing user to an account as Lead or Cleaner

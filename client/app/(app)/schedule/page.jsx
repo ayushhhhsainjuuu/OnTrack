@@ -7,8 +7,7 @@ import {
   Umbrella,
 } from "lucide-react";
 
-import useAuth from "@/client/hooks/useAuth";
-import { supabase } from "@/client/lib/supabase";
+import useAuth from "@/hooks/useAuth";
 import WeeklyCalender from "@/components/schedule/WeeklyCalender";
 import LeaveForm from "@/components/leave/LeaveForm";
 import LeaveTable from "@/components/leave/LeaveTable";
