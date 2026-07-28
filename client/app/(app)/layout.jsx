@@ -33,11 +33,6 @@ const baseNav = [
     icon: CalendarRange,
   },
   {
-    href: "/task",
-    label: "Tasks",
-    icon: CheckSquare,
-  },
-  {
     href: "/analytics",
     label: "Analytics",
     icon: BarChart3,
