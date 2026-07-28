@@ -20,6 +20,8 @@ import {
   X,
 } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
+import CommandPalette from "@/components/CommandPalette";
+import VirtualKeyboardWidget from "@/components/VirtualKeyboardWidget";
 
 const baseNav = [
   {
@@ -545,6 +547,9 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      <CommandPalette role={role} />
+      <VirtualKeyboardWidget />
     </div>
   );
 }
