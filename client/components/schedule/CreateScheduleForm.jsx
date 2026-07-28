@@ -63,7 +63,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
 
   /*
     Loads the employees this user is allowed to schedule, based on
-    the hierarchy above.
+    the hierarchy above. 
   */
   useEffect(() => {
     if (assignableRoles.length === 0) {
@@ -76,17 +76,32 @@ export default function CreateScheduleForm({ role, onSuccess }) {
       setAssignableEmployeesLoading(true);
 
       try {
-        const { data, error } = await supabase
-          .from("users")
-          .select("id, full_name, system_role")
-          .eq("is_active", true)
-          .in("system_role", assignableRoles);
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
+        const response = await fetch(
+          `/api/schedule?resource=assignable-employees&roles=${encodeURIComponent(
+            assignableRoles.join(",")
+          )}`,
+          {
+            headers: session?.access_token
+              ? { Authorization: `Bearer ${session.access_token}` }
+              : {},
+          }
+        );
+
+        const data = await response.json().catch(() => null);
 
         if (isCancelledRequest) {
           return;
         }
 
-        if (error) throw error;
+        if (!response.ok) {
+          throw new Error(
+            data?.error || "Could not load employees."
+          );
+        }
 
         setAssignableEmployees(data || []);
       } catch (error) {
@@ -245,7 +260,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                 key={employee.id}
                 value={employee.id}
               >
-                {employee.full_name} — {employee.system_role}
+                {employee.full_name} — {employee.role}
               </option>
             ))}
           </select>
