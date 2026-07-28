@@ -279,23 +279,31 @@ export default function CreateScheduleForm({ role, onSuccess }) {
               Employee
             </label>
 
-            <select
-              id="create-schedule-employee"
-              value={scheduleForm.employeeId}
-              onChange={(event) =>
-                updateScheduleField(
-                  "employeeId",
-                  event.target.value
-                )
-              }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
-            >
-              <option value="">
-                {assignableEmployeesLoading
-                  ? "Loading employees..."
-                  : assignableEmployees.length === 0
-                  ? "No employees available"
-                  :"Select an employee"}
+          <select
+            id="create-schedule-employee"
+            value={scheduleForm.employeeId}
+            onChange={(event) =>
+              updateScheduleField(
+                "employeeId",
+                event.target.value
+              )
+            }
+            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+          >
+            <option value="">
+              {assignableEmployeesLoading
+                ? "Loading employees..."
+                : assignableEmployees.length === 0
+                ? "No employees available"
+                :"Select an employee"}
+            </option>
+
+            {assignableEmployees.map((employee) => (
+              <option
+                key={employee.id}
+                value={employee.id}
+              >
+                {employee.full_name} — {employee.role}
               </option>
 
               {assignableEmployees.map((employee) => (
