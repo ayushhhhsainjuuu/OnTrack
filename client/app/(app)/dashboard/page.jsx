@@ -1,45 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
 
 import SuperAdminDashboard from "@/components/dashboard/SuperAdminDashboard";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import EmployeeDashboard from "@/components/dashboard/EmployeeDashboard";
+import useAuth from "@/hooks/useAuth";
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [state, setState] = useState({ loading: true });
+  const { user, role, isLoading } = useAuth();
 
-  useEffect(() => {
-    async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.replace("/auth/login");
-        return;
-      }
-
-      const role = (
-        user.user_metadata?.role ||
-        user.app_metadata?.role ||
-        ""
-      ).toLowerCase();
-
-      setState({
-        loading: false,
-        role,
-        email: user.email,
-      });
-    }
-
-    load();
-  }, [router]);
-
-  if (state.loading) {
+  if (isLoading) {
     return (
       <div className="p-6 text-sm font-medium text-gray-500 dark:text-slate-400">
         Loading dashboard...
@@ -47,7 +19,14 @@ export default function DashboardPage() {
     );
   }
 
-  switch (state.role) {
+  if (!user) {
+    router.replace("/auth/login");
+    return null;
+  }
+
+  const normalizedRole = (role || "").toLowerCase();
+
+  switch (normalizedRole) {
     case "owner":
     case "general manager (gm)":
       return <SuperAdminDashboard />;
@@ -72,8 +51,8 @@ export default function DashboardPage() {
         <pre className="whitespace-pre-wrap text-xs text-amber-800 dark:text-amber-300">
           {JSON.stringify(
             {
-              email: state.email,
-              roleFound: state.role || "(empty)",
+              email: user.email,
+              roleFound: role || "(empty)",
             },
             null,
             2
