@@ -13,8 +13,13 @@ jobs:
       service_name: ai-service
       service_dir: backend/ai-service
       azure_app_name: ontrack-ai-service
+      port: "4005"
+      needs_anthropic_key: true
     secrets:
       ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
       ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
       ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       PUBLISH_PROFILE: ${{ secrets.AZURE_AI_SERVICE_PUBLISH_PROFILE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}

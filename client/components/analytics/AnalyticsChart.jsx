@@ -8,33 +8,83 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 
-// ---------------------------------------------------------------------------
 // EDIT THESE to match your schema (same values as AIQueryBox).
-// ---------------------------------------------------------------------------
 const TABLES = {
-  shifts: "shifts",
+  shifts: "schedules",     // scheduled shifts — status is draft/published/cancelled, no completed/missed
+  clock: "clock_records",  // actual clock in/out events, matched against schedules below
   leave: "leave_requests",
   tasks: "tasks",
 };
 const COLUMNS = {
-  shiftDate: "start_time",
-  shiftStatus: "status",
-  leaveDate: "created_at",
-  taskDate: "created_at",
-  taskStatus: "status",
+  shiftDate: "start_time",     // schedules
+  leaveDate: "created_at",     // leave_requests
+  taskDate: "created_at",      // tasks
+  taskStatus: "status",        // tasks.status is pending | in_progress | done
+  clockInDate: "clock_in_at",  // clock_records
+  clockOutCol: "clock_out_at", // null = never clocked out
 };
 const WEEKS = 6; // how many weeks the trend line covers
-// ---------------------------------------------------------------------------
 
-// count rows in [start, end) with optional status filter
-function countBetween(table, dateCol, startISO, endISO, statusCol, statusVal) {
+// How much slack (in hours) around a shift's start/end time still counts as
+// "clocking in for that shift" — covers people clocking in a bit early/late.
+const MATCH_BUFFER_HOURS = 2;
+
+// simple row count with optional equality filter, for leave/tasks
+function countBetween(table, dateCol, startISO, endISO, filterCol, filterVal) {
   let q = supabase
     .from(table)
     .select("*", { count: "exact", head: true })
     .gte(dateCol, startISO)
     .lt(dateCol, endISO);
-  if (statusCol) q = q.eq(statusCol, statusVal);
+  if (filterCol) q = q.eq(filterCol, filterVal);
   return q;
+}
+
+// Does this clock_records row belong to this schedule?
+// Same user, and clocked in within [start_time - buffer, end_time + buffer].
+function isMatch(clockRecord, schedule) {
+  if (clockRecord.user_id !== schedule.user_id) return false;
+  const bufferMs = MATCH_BUFFER_HOURS * 60 * 60 * 1000;
+  const clockIn = new Date(clockRecord.clock_in_at).getTime();
+  const shiftStart = new Date(schedule.start_time).getTime() - bufferMs;
+  const shiftEnd = new Date(schedule.end_time).getTime() + bufferMs;
+  return clockIn >= shiftStart && clockIn <= shiftEnd;
+}
+
+// For a given [start, end) window, fetch ended shifts + clock_records and
+// return { completed, missed } counts by matching them up.
+async function completedVsMissed(startISO, endISO) {
+  const nowISO = new Date().toISOString();
+  const windowEnd = endISO < nowISO ? endISO : nowISO; // don't judge shifts that haven't ended yet
+
+  const pastSchedulesQ = supabase
+    .from(TABLES.shifts)
+    .select("id,user_id,start_time,end_time")
+    .gte(COLUMNS.shiftDate, startISO)
+    .lt(COLUMNS.shiftDate, endISO)
+    .lt("end_time", windowEnd);
+
+  const clockRecordsQ = supabase
+    .from(TABLES.clock)
+    .select("user_id,clock_in_at,clock_out_at")
+    .gte(COLUMNS.clockInDate, startISO)
+    .lt(COLUMNS.clockInDate, endISO);
+
+  const [pastSchedules, clockRecords] = await Promise.all([pastSchedulesQ, clockRecordsQ]);
+
+  const failed = [pastSchedules, clockRecords].find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
+
+  let completed = 0;
+  let missed = 0;
+  for (const schedule of pastSchedules.data ?? []) {
+    const clockedOut = (clockRecords.data ?? []).some(
+      (cr) => isMatch(cr, schedule) && cr.clock_out_at
+    );
+    if (clockedOut) completed++;
+    else missed++;
+  }
+  return { completed, missed };
 }
 
 function weekBoundaries(weeksAgo) {
@@ -56,18 +106,17 @@ export default function AnalyticsChart() {
       try {
         // ---- Bar: this week's snapshot ----
         const { start, end } = weekBoundaries(0);
-        const [completed, missed, leave, tasks] = await Promise.all([
-          countBetween(TABLES.shifts, COLUMNS.shiftDate, start, end, COLUMNS.shiftStatus, "completed"),
-          countBetween(TABLES.shifts, COLUMNS.shiftDate, start, end, COLUMNS.shiftStatus, "missed"),
+        const [shiftStats, leave, tasks] = await Promise.all([
+          completedVsMissed(start, end),
           countBetween(TABLES.leave, COLUMNS.leaveDate, start, end),
-          countBetween(TABLES.tasks, COLUMNS.taskDate, start, end, COLUMNS.taskStatus, "completed"),
+          countBetween(TABLES.tasks, COLUMNS.taskDate, start, end, COLUMNS.taskStatus, "done"),
         ]);
-        const firstErr = [completed, missed, leave, tasks].find((r) => r.error);
-        if (firstErr?.error) throw new Error(firstErr.error.message);
+        if (leave.error) throw new Error(leave.error.message);
+        if (tasks.error) throw new Error(tasks.error.message);
 
         setBarData([
-          { name: "Completed", value: completed.count ?? 0 },
-          { name: "Missed", value: missed.count ?? 0 },
+          { name: "Completed", value: shiftStats.completed },
+          { name: "Missed", value: shiftStats.missed },
           { name: "Leave", value: leave.count ?? 0 },
           { name: "Tasks", value: tasks.count ?? 0 },
         ]);
@@ -76,16 +125,11 @@ export default function AnalyticsChart() {
         const weekResults = [];
         for (let i = WEEKS - 1; i >= 0; i--) {
           const b = weekBoundaries(i);
-          const [c, m] = await Promise.all([
-            countBetween(TABLES.shifts, COLUMNS.shiftDate, b.start, b.end, COLUMNS.shiftStatus, "completed"),
-            countBetween(TABLES.shifts, COLUMNS.shiftDate, b.start, b.end, COLUMNS.shiftStatus, "missed"),
-          ]);
-          if (c.error) throw new Error(c.error.message);
-          if (m.error) throw new Error(m.error.message);
+          const stats = await completedVsMissed(b.start, b.end);
           weekResults.push({
             week: i === 0 ? "This wk" : `${i}w ago`,
-            completed: c.count ?? 0,
-            missed: m.count ?? 0,
+            completed: stats.completed,
+            missed: stats.missed,
           });
         }
         setLineData(weekResults);

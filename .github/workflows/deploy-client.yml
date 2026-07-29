@@ -20,13 +20,17 @@ jobs:
         working-directory: ./client
         run: npm ci
 
+      # NEXT_PUBLIC_* vars are inlined into the JS bundle at build time, so
+      # they must be present here. NEXT_PUBLIC_AI_SERVICE_URL is what
+      # components/analytics/AIQueryBox.jsx calls directly from the browser -
+      # it must point at the deployed ai-service, not localhost.
       - name: Build
         working-directory: ./client
         run: npm run build
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-          NEXT_PUBLIC_API_URL: https://ontrack-server.azurewebsites.net
+          NEXT_PUBLIC_AI_SERVICE_URL: ${{ secrets.NEXT_PUBLIC_AI_SERVICE_URL }}
 
       - name: Assemble standalone output
         working-directory: ./client
@@ -43,3 +47,50 @@ jobs:
           app-name: ontrack-client
           publish-profile: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
           package: ./client/deploy
+
+      # SCHEDULING_SERVICE_URL is read server-side at request time inside
+      # app/api/schedule/route.js, not at build time, so it can't be baked in
+      # above like the NEXT_PUBLIC_* vars - it has to be a runtime App
+      # Setting. Set via Kudu using the publish profile's own deployment
+      # credentials, avoiding the need for an Entra ID service principal.
+      - name: Set Application Settings via Kudu
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
+          SCHEDULING_SERVICE_URL: ${{ secrets.SCHEDULING_SERVICE_URL }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, re, json, base64, urllib.request
+
+          xml = os.environ["PUBLISH_PROFILE"]
+
+          m = re.search(
+              r'publishMethod="MSDeploy"[^>]*userName="([^"]+)"[^>]*userPWD="([^"]+)"',
+              xml,
+          )
+          if not m:
+              raise SystemExit("Could not find MSDeploy credentials in publish profile")
+          user, pwd = m.group(1), m.group(2)
+
+          site_match = re.search(r'publishUrl="([a-zA-Z0-9\-]+)\.scm\.azurewebsites\.net', xml)
+          if not site_match:
+              raise SystemExit("Could not find site name in publish profile")
+          site = site_match.group(1)
+
+          settings = {"SCHEDULING_SERVICE_URL": os.environ["SCHEDULING_SERVICE_URL"]}
+
+          data = json.dumps(settings).encode()
+          auth = base64.b64encode(f"{user}:{pwd}".encode()).decode()
+
+          req = urllib.request.Request(
+              f"https://{site}.scm.azurewebsites.net/api/settings",
+              data=data,
+              method="POST",
+              headers={
+                  "Authorization": f"Basic {auth}",
+                  "Content-Type": "application/json",
+              },
+          )
+
+          with urllib.request.urlopen(req) as resp:
+              print("Kudu settings update status:", resp.status)
+          PYEOF

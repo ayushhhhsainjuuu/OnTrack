@@ -5,31 +5,29 @@ import { useState } from "react";
 // Adjust this path if yours lives somewhere else (e.g. "@/utils/supabase").
 import { supabase } from "@/lib/supabase";
 
-// AI microservice base URL. Set NEXT_PUBLIC_AI_SERVICE_URL in your env.
-// Local dev default matches ai-service (PORT 4005).
-const AI_SERVICE_URL =
-  process.env.NEXT_PUBLIC_AI_SERVICE_URL || "http://localhost:4005";
-
-// ---------------------------------------------------------------------------
 // EDIT THESE to match your real Supabase schema. These are the ONLY lines
 // that depend on your table/column names.
-// ---------------------------------------------------------------------------
 const TABLES = {
-  shifts: "shifts",          // your schedule / shifts table
-  leave: "leave_requests",   // your leave requests table
-  tasks: "tasks",            // your tasks table
+  shifts: "schedules",     // scheduled shifts — status is draft/published/cancelled, no completed/missed
+  clock: "clock_records",  // actual clock in/out events, matched against schedules below
+  leave: "leave_requests",
+  tasks: "tasks",
 };
 
 const COLUMNS = {
-  shiftDate: "start_time",   // a date/timestamp column on shifts
-  shiftStatus: "status",     // values like "completed" | "missed" | "scheduled"
-  leaveDate: "created_at",   // a date/timestamp column on leave
-  taskDate: "created_at",    // a date/timestamp column on tasks
-  taskStatus: "status",      // values like "done" | "completed"
+  shiftDate: "start_time",     // schedules
+  leaveDate: "created_at",     // leave_requests
+  taskDate: "created_at",      // tasks
+  taskStatus: "status",        // tasks.status is pending | in_progress | done
+  clockInDate: "clock_in_at",  // clock_records
+  clockOutCol: "clock_out_at", // null = never clocked out
 };
 
 const WINDOW_DAYS = 7;
-// ---------------------------------------------------------------------------
+
+// How much slack (in hours) around a shift's start/end time still counts as
+// "clocking in for that shift" — covers people clocking in a bit early/late.
+const MATCH_BUFFER_HOURS = 2;
 
 function startOfWindow() {
   const d = new Date();
@@ -37,69 +35,93 @@ function startOfWindow() {
   return d.toISOString();
 }
 
+// Does this clock_records row belong to this schedule?
+// Same user, and clocked in within [start_time - buffer, end_time + buffer].
+function isMatch(clockRecord, schedule) {
+  if (clockRecord.user_id !== schedule.user_id) return false;
+  const bufferMs = MATCH_BUFFER_HOURS * 60 * 60 * 1000;
+  const clockIn = new Date(clockRecord.clock_in_at).getTime();
+  const shiftStart = new Date(schedule.start_time).getTime() - bufferMs;
+  const shiftEnd = new Date(schedule.end_time).getTime() + bufferMs;
+  return clockIn >= shiftStart && clockIn <= shiftEnd;
+}
+
 export default function AIQueryBox() {
   const [numbers, setNumbers] = useState(null);
-  const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Step 1: pull the aggregate numbers straight from Supabase.
-  // Count-only queries (head: true) so no row data is transferred.
   async function fetchNumbers() {
     const since = startOfWindow();
-    const countIn = (table) =>
-      supabase.from(table).select("*", { count: "exact", head: true });
+    const nowISO = new Date().toISOString();
 
-    const [total, completed, missed, leave, tasksDone] = await Promise.all([
-      countIn(TABLES.shifts).gte(COLUMNS.shiftDate, since),
-      countIn(TABLES.shifts).gte(COLUMNS.shiftDate, since).eq(COLUMNS.shiftStatus, "completed"),
-      countIn(TABLES.shifts).gte(COLUMNS.shiftDate, since).eq(COLUMNS.shiftStatus, "missed"),
-      countIn(TABLES.leave).gte(COLUMNS.leaveDate, since),
-      countIn(TABLES.tasks).gte(COLUMNS.taskDate, since).eq(COLUMNS.taskStatus, "completed"),
+    const totalQ = supabase
+      .from(TABLES.shifts)
+      .select("*", { count: "exact", head: true })
+      .gte(COLUMNS.shiftDate, since);
+
+    // Only shifts that have already ended can be judged completed vs missed.
+    const pastSchedulesQ = supabase
+      .from(TABLES.shifts)
+      .select("id,user_id,start_time,end_time")
+      .gte(COLUMNS.shiftDate, since)
+      .lt("end_time", nowISO);
+
+    const clockRecordsQ = supabase
+      .from(TABLES.clock)
+      .select("user_id,clock_in_at,clock_out_at")
+      .gte(COLUMNS.clockInDate, since);
+
+    const leaveQ = supabase
+      .from(TABLES.leave)
+      .select("*", { count: "exact", head: true })
+      .gte(COLUMNS.leaveDate, since);
+
+    const tasksQ = supabase
+      .from(TABLES.tasks)
+      .select("*", { count: "exact", head: true })
+      .gte(COLUMNS.taskDate, since)
+      .eq(COLUMNS.taskStatus, "done");
+
+    const [total, pastSchedules, clockRecords, leave, tasksDone] = await Promise.all([
+      totalQ,
+      pastSchedulesQ,
+      clockRecordsQ,
+      leaveQ,
+      tasksQ,
     ]);
 
-    const failed = [total, completed, missed, leave, tasksDone].find((r) => r.error);
+    const failed = [total, pastSchedules, clockRecords, leave, tasksDone].find((r) => r.error);
     if (failed?.error) throw new Error(failed.error.message);
+
+    // Match each ended shift against clock_records to decide completed vs missed.
+    let completedShifts = 0;
+    let missedShifts = 0;
+    for (const schedule of pastSchedules.data ?? []) {
+      const clockedOut = (clockRecords.data ?? []).some(
+        (cr) => isMatch(cr, schedule) && cr.clock_out_at
+      );
+      if (clockedOut) completedShifts++;
+      else missedShifts++;
+    }
 
     return {
       windowDays: WINDOW_DAYS,
       totalShifts: total.count ?? 0,
-      completedShifts: completed.count ?? 0,
-      missedShifts: missed.count ?? 0,
+      completedShifts,
+      missedShifts,
       leaveRequests: leave.count ?? 0,
       tasksCompleted: tasksDone.count ?? 0,
     };
   }
 
-  // Step 2: send those numbers to ai-service, which asks Claude to write
-  // the summary. The model only narrates real data.
-  async function fetchSummary(context) {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-
-    const res = await fetch(`${AI_SERVICE_URL}/ai/summary`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ reportType: "weekly", context }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
-    return data.summary;
-  }
-
   async function handleGenerate() {
     setLoading(true);
     setError("");
-    setSummary("");
     try {
       const nums = await fetchNumbers();
       setNumbers(nums);
-      const text = await fetchSummary(nums);
-      setSummary(text);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -110,9 +132,9 @@ export default function AIQueryBox() {
   return (
     <div style={styles.wrap}>
       <div style={styles.header}>
-        <h2 style={styles.title}>Weekly AI Summary</h2>
+        <h2 style={styles.title}>Weekly Stats</h2>
         <button style={styles.button} onClick={handleGenerate} disabled={loading}>
-          {loading ? "Generating…" : "Generate"}
+          {loading ? "Loading…" : "Generate"}
         </button>
       </div>
 
@@ -128,15 +150,9 @@ export default function AIQueryBox() {
         </div>
       )}
 
-      {summary && (
-        <div style={styles.summaryBox}>
-          <p style={styles.summaryText}>{summary}</p>
-        </div>
-      )}
-
       {!numbers && !loading && !error && (
         <p style={styles.hint}>
-          Click Generate to load the last {WINDOW_DAYS} days of stats and an AI summary.
+          Click Generate to load the last {WINDOW_DAYS} days of stats.
         </p>
       )}
     </div>
@@ -161,8 +177,6 @@ const styles = {
   card: { border: "1px solid #e2e8f0", borderRadius: 10, padding: 14, textAlign: "center", background: "#f8fafc" },
   cardValue: { fontSize: 26, fontWeight: 700, color: "#0f172a" },
   cardLabel: { fontSize: 12, color: "#64748b", marginTop: 4 },
-  summaryBox: { borderTop: "1px solid #e2e8f0", paddingTop: 16 },
-  summaryText: { fontSize: 14, lineHeight: 1.6, color: "#334155", margin: 0, whiteSpace: "pre-wrap" },
   error: { color: "#dc2626", fontSize: 14 },
   hint: { color: "#94a3b8", fontSize: 14 },
 };
