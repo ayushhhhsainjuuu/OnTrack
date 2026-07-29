@@ -13,8 +13,11 @@ jobs:
       service_name: scheduling-service
       service_dir: backend/scheduling-service
       azure_app_name: ontrack-scheduling-service
+      port: "4001"
     secrets:
       ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
       ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
       ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       PUBLISH_PROFILE: ${{ secrets.AZURE_SCHEDULING_SERVICE_PUBLISH_PROFILE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
