@@ -1,0 +1,131 @@
+name: Deploy Backend Service (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      service_name:
+        description: "Short name, e.g. auth-service"
+        required: true
+        type: string
+      service_dir:
+        description: "Path to the service folder, e.g. backend/auth-services"
+        required: true
+        type: string
+      azure_app_name:
+        description: "Azure Web App (for Containers) name for this service"
+        required: true
+        type: string
+      port:
+        description: "Port the service listens on inside the container (must match the Dockerfile's EXPOSE/PORT)"
+        required: true
+        type: string
+      needs_anthropic_key:
+        description: "Whether this service requires ANTHROPIC_API_KEY (only ai-service)"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      ACR_LOGIN_SERVER:
+        required: true
+      ACR_USERNAME:
+        required: true
+      ACR_PASSWORD:
+        required: true
+      PUBLISH_PROFILE:
+        required: true
+      SUPABASE_URL:
+        required: true
+      SUPABASE_SERVICE_ROLE_KEY:
+        required: true
+      ANTHROPIC_API_KEY:
+        required: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.service_dir }}
+          push: true
+          tags: |
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ inputs.service_name }}:${{ github.sha }}
+            ${{ secrets.ACR_LOGIN_SERVER }}/${{ inputs.service_name }}:latest
+
+      - name: Deploy to Azure Web App for Containers
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ inputs.azure_app_name }}
+          publish-profile: ${{ secrets.PUBLISH_PROFILE }}
+          images: ${{ secrets.ACR_LOGIN_SERVER }}/${{ inputs.service_name }}:${{ github.sha }}
+
+      # Application Settings (env vars) are not part of the container image and
+      # are not touched by azure/webapps-deploy above. Rather than requiring an
+      # Entra ID service principal (blocked for student/managed tenants), this
+      # reuses the same deployment credentials embedded in the publish profile
+      # and calls the Kudu (SCM) settings API directly.
+      - name: Set Application Settings via Kudu
+        env:
+          PUBLISH_PROFILE: ${{ secrets.PUBLISH_PROFILE }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SERVICE_PORT: ${{ inputs.port }}
+          NEEDS_ANTHROPIC: ${{ inputs.needs_anthropic_key }}
+        run: |
+          python3 - <<'PYEOF'
+          import os, re, json, base64, urllib.request
+
+          xml = os.environ["PUBLISH_PROFILE"]
+
+          m = re.search(
+              r'publishMethod="MSDeploy"[^>]*userName="([^"]+)"[^>]*userPWD="([^"]+)"',
+              xml,
+          )
+          if not m:
+              raise SystemExit("Could not find MSDeploy credentials in publish profile")
+          user, pwd = m.group(1), m.group(2)
+
+          site_match = re.search(r'publishUrl="([a-zA-Z0-9\-]+)\.scm\.azurewebsites\.net', xml)
+          if not site_match:
+              raise SystemExit("Could not find site name in publish profile")
+          site = site_match.group(1)
+
+          settings = {
+              "SUPABASE_URL": os.environ["SUPABASE_URL"],
+              "SUPABASE_SERVICE_ROLE_KEY": os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+              "WEBSITES_PORT": os.environ["SERVICE_PORT"],
+          }
+
+          if os.environ.get("NEEDS_ANTHROPIC") == "true":
+              anthropic_key = os.environ.get("ANTHROPIC_API_KEY", "")
+              if not anthropic_key:
+                  raise SystemExit("needs_anthropic_key is true but ANTHROPIC_API_KEY secret is empty")
+              settings["ANTHROPIC_API_KEY"] = anthropic_key
+
+          data = json.dumps(settings).encode()
+          auth = base64.b64encode(f"{user}:{pwd}".encode()).decode()
+
+          req = urllib.request.Request(
+              f"https://{site}.scm.azurewebsites.net/api/settings",
+              data=data,
+              method="POST",
+              headers={
+                  "Authorization": f"Basic {auth}",
+                  "Content-Type": "application/json",
+              },
+          )
+
+          with urllib.request.urlopen(req) as resp:
+              print("Kudu settings update status:", resp.status)
+          PYEOF

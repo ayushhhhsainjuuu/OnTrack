@@ -15,6 +15,7 @@
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "recharge": "^0.0.1",
     "recharts": "^3.10.1"
   },
   "devDependencies": {

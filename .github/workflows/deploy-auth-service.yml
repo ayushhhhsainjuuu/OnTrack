@@ -1,0 +1,23 @@
+name: Deploy Auth Service
+
+on:
+  push:
+    branches: [main]
+    paths: ['backend/auth-services/**']
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/_deploy-backend-service.yml
+    with:
+      service_name: auth-service
+      service_dir: backend/auth-services
+      azure_app_name: ontrack-auth-service
+      port: "4004"
+    secrets:
+      ACR_LOGIN_SERVER: ${{ secrets.ACR_LOGIN_SERVER }}
+      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
+      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+      PUBLISH_PROFILE: ${{ secrets.AZURE_AUTH_SERVICE_PUBLISH_PROFILE }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
