@@ -32,7 +32,6 @@ const baseNav = [
     label: "Schedule & Leave",
     icon: CalendarRange,
   },
- 
   {
     href: "/analytics",
     label: "Analytics",
