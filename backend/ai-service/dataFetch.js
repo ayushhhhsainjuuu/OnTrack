@@ -117,15 +117,15 @@ export async function fetchSummaryContext({ user, startDate, endDate }) {
     userIds.length
       ? supabase
           .from("clock_records")
-          .select("id, user_id, clock_in, clock_out")
+          .select("id, user_id, clock_in_at, clock_out_at")
           .in("user_id", userIds)
-          .gte("clock_in", startDate)
-          .lte("clock_in", endDate)
+          .gte("clock_in_at", startDate)
+          .lte("clock_in_at", endDate)
       : Promise.resolve({ data: [], error: null }),
     userIds.length
       ? supabase
           .from("leave_requests")
-          .select("id, user_id, start_date, end_date, type, status")
+          .select("id, user_id, start_date, end_date, leave_type, status")
           .in("user_id", userIds)
           .lte("start_date", endDate)
           .gte("end_date", startDate)
