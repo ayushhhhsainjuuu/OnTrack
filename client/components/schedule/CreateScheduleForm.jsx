@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Loader2, Plus } from "lucide-react";
+import { CheckCircle2, Loader2, Plus } from "lucide-react";
 
 import { supabase } from "@/lib/supabase";
 
@@ -10,7 +10,9 @@ const cardClass =
 
 const initialScheduleForm = {
   employeeId: "",
-  date: "",
+  accountId: "",
+  startDate: "",
+  endDate: "",
   startTime: "",
   endTime: "",
   notes: "",
@@ -55,10 +57,16 @@ export default function CreateScheduleForm({ role, onSuccess }) {
   const [assignableEmployeesLoading, setAssignableEmployeesLoading] =
     useState(false);
 
+  const [scheduleAccounts, setScheduleAccounts] =
+    useState([]);
+
   const [createScheduleError, setCreateScheduleError] =
     useState("");
 
   const [createScheduleSubmitting, setCreateScheduleSubmitting] =
+    useState(false);
+
+  const [createScheduleSuccess, setCreateScheduleSuccess] =
     useState(false);
 
   /*
@@ -125,6 +133,42 @@ export default function CreateScheduleForm({ role, onSuccess }) {
     };
   }, [assignableRoles]);
 
+  /*
+    Loads the sites/accounts a schedule can be assigned to. The
+    database enforces a "schedules_site_required" check constraint,
+    so a site must always be selected when creating a schedule.
+  */
+  useEffect(() => {
+    let isCancelledRequest = false;
+
+    const loadAccounts = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("accounts")
+          .select("id, name")
+          .eq("is_active", true);
+
+        if (isCancelledRequest) {
+          return;
+        }
+
+        if (error) throw error;
+
+        setScheduleAccounts(data || []);
+      } catch (error) {
+        if (!isCancelledRequest) {
+          console.error("Could not load sites for scheduling:", error);
+        }
+      }
+    };
+
+    loadAccounts();
+
+    return () => {
+      isCancelledRequest = true;
+    };
+  }, []);
+
   const updateScheduleField = (field, value) => {
     setScheduleForm((current) => ({
       ...current,
@@ -134,32 +178,57 @@ export default function CreateScheduleForm({ role, onSuccess }) {
     setCreateScheduleError("");
   };
 
+  /*
+    Keeps the end date in sync with the start date until the user
+    intentionally picks a different one
+  */
+  const handleStartDateChange = (value) => {
+    setScheduleForm((current) => ({
+      ...current,
+      startDate: value,
+      endDate:
+        !current.endDate || current.endDate === current.startDate
+          ? value
+          : current.endDate,
+    }));
+
+    setCreateScheduleError("");
+  };
+
   const handleCreateScheduleSubmit = async (event) => {
     event.preventDefault();
     setCreateScheduleError("");
+    setCreateScheduleSuccess(false);
 
     const {
       employeeId,
-      date,
+      accountId,
+      startDate,
+      endDate,
       startTime,
       endTime,
       notes,
     } = scheduleForm;
 
-    if (!employeeId || !date || !startTime || !endTime) {
+    if (
+      !employeeId ||
+      !accountId ||
+      !startDate ||
+      !endDate ||
+      !startTime ||
+      !endTime
+    ) {
       setCreateScheduleError(
-        "Please select an employee, a date, and both shift times."
+        "Please select an employee, a site, a start/end date, and both shift times."
       );
       return;
     }
 
-    const startTimeIso = new Date(
-      `${date}T${startTime}`
-    ).toISOString();
-
-    const endTimeIso = new Date(
-      `${date}T${endTime}`
-    ).toISOString();
+    /*
+      Manually determines timestamps to prevent weird conversions
+    */
+    const startTimeIso = `${startDate}T${startTime}:00.000Z`;
+    const endTimeIso = `${endDate}T${endTime}:00.000Z`;
 
     if (new Date(endTimeIso) <= new Date(startTimeIso)) {
       setCreateScheduleError(
@@ -185,6 +254,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
         },
         body: JSON.stringify({
           user_id: employeeId,
+          account_id: accountId,
           start_time: startTimeIso,
           end_time: endTimeIso,
           notes: notes.trim() || undefined,
@@ -202,8 +272,8 @@ export default function CreateScheduleForm({ role, onSuccess }) {
 
       setScheduleForm(initialScheduleForm);
 
-      onSuccess?.("The schedule was created successfully.");
-    } catch (error) {
+      onSuccess?.("The schedule was created successfully.");        setCreateScheduleSuccess(true);
+        window.setTimeout(() => setCreateScheduleSuccess(false), 4000);    } catch (error) {
       setCreateScheduleError(
         error.message || "Could not create the schedule."
       );
@@ -228,13 +298,14 @@ export default function CreateScheduleForm({ role, onSuccess }) {
         onSubmit={handleCreateScheduleSubmit}
         className="mt-5 space-y-5"
       >
-        <div>
-          <label
-            htmlFor="create-schedule-employee"
-            className="text-sm font-semibold text-gray-700 dark:text-slate-200"
-          >
-            Employee
-          </label>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="create-schedule-employee"
+              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+            >
+              Employee
+            </label>
 
           <select
             id="create-schedule-employee"
@@ -254,36 +325,69 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                 ? "No employees available"
                 :"Select an employee"}
             </option>
+              {assignableEmployees.map((employee) => (
+                <option
+                  key={employee.id}
+                  value={employee.id}
+                >
+                  {employee.full_name} — {employee.role}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            {assignableEmployees.map((employee) => (
-              <option
-                key={employee.id}
-                value={employee.id}
-              >
-                {employee.full_name} — {employee.role}
+          <div>
+            <label
+              htmlFor="create-schedule-account"
+              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+            >
+              Site
+            </label>
+
+            <select
+              id="create-schedule-account"
+              value={scheduleForm.accountId}
+              onChange={(event) =>
+                updateScheduleField(
+                  "accountId",
+                  event.target.value
+                )
+              }
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+            >
+              <option value="">
+                {scheduleAccounts.length === 0
+                  ? "No sites available"
+                  : "Select a site"}
               </option>
-            ))}
-          </select>
+
+              {scheduleAccounts.map((account) => (
+                <option
+                  key={account.id}
+                  value={account.id}
+                >
+                  {account.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label
               htmlFor="create-schedule-date"
               className="text-sm font-semibold text-gray-700 dark:text-slate-200"
             >
-              Date
+              Start date
             </label>
 
             <input
               id="create-schedule-date"
               type="date"
-              value={scheduleForm.date}
+              value={scheduleForm.startDate}
               onChange={(event) =>
-                updateScheduleField(
-                  "date",
-                  event.target.value
-                )
+                handleStartDateChange(event.target.value)
               }
               className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
             />
@@ -309,6 +413,36 @@ export default function CreateScheduleForm({ role, onSuccess }) {
               }
               className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
             />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label
+              htmlFor="create-schedule-end-date"
+              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+            >
+              End date
+            </label>
+
+            <input
+              id="create-schedule-end-date"
+              type="date"
+              value={scheduleForm.endDate}
+              min={scheduleForm.startDate || undefined}
+              onChange={(event) =>
+                updateScheduleField(
+                  "endDate",
+                  event.target.value
+                )
+              }
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-blue-950"
+            />
+
+            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+              Defaults to the start date. Pick the next day for
+              overnight shifts.
+            </p>
           </div>
 
           <div>
@@ -360,7 +494,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
 
         {createScheduleError && (
           <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
-            {createScheduleError}
+            Something went wrong during schedule creation. {createScheduleError}
           </div>
         )}
 
