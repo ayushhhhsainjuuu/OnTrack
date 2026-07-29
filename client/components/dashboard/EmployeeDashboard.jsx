@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/lib/supabase";
 
 const OFFICE_LAT = 51.06474583312273;
 const OFFICE_LNG = -114.08930946420794;
@@ -145,9 +146,93 @@ export default function EmployeeDashboard() {
   const [distanceMeters, setDistanceMeters] = useState(null);
   const [now, setNow] = useState(() => Date.now());
 
+  // Backed by the clock_records table via backend/clock-services (port 4002),
+  // proxied through /api/clock. clockRecordId is the open row's id.
+  const [clockRecordId, setClockRecordId] = useState(null);
+  const [clockBusy, setClockBusy] = useState(false);
+  const [clockError, setClockError] = useState("");
+  const [lastCoords, setLastCoords] = useState({ lat: null, lng: null });
+
+  // The site (account) this employee clocks into. clock_records has a
+  // "clock_records_site_required" check constraint - a clock-in with no
+  // account_id and no project_id is rejected by the database. Resolved from
+  // account_members (open read policy, same as CreateScheduleForm's
+  // accounts fetch) rather than asking the employee to pick one each time.
+  const [accountId, setAccountId] = useState(null);
+  const [siteError, setSiteError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      if (!userId) return;
+
+      const { data, error } = await supabase
+        .from("account_members")
+        .select("account_id")
+        .eq("user_id", userId)
+        .is("end_date", null)
+        .limit(1);
+
+      if (cancelled) return;
+
+      if (error || !data?.length) {
+        setSiteError(
+          "You are not currently assigned to a site - contact your manager."
+        );
+        return;
+      }
+
+      setAccountId(data[0].account_id);
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
+  async function getAuthHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return null;
+    return {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${session.access_token}`,
+    };
+  }
+
+  // On mount, restore clock state from the database so a page refresh
+  // doesn't reset an in-progress shift back to "Clocked Out".
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const headers = await getAuthHeaders();
+        if (!headers) return;
+
+        const res = await fetch("/api/clock?open=true", { headers });
+        if (!res.ok) return;
+
+        const payload = await res.json();
+        if (cancelled || !payload?.record) return;
+
+        setClockRecordId(payload.record.id);
+        const start = new Date(payload.record.clock_in_at);
+        setClockInTime(start);
+        setNow(Date.now());
+        setClockedIn(true);
+      } catch {
+        // service unreachable - leave the UI in its clocked-out default
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, []);
+
   const evaluateGeofence = useCallback((lat, lng) => {
     const distance = haversineDistance(lat, lng, OFFICE_LAT, OFFICE_LNG);
     setDistanceMeters(distance);
+    setLastCoords({ lat, lng });
     setGpsState(distance <= GEOFENCE_RADIUS_METERS ? "inside" : "outside");
   }, []);
 
@@ -190,31 +275,89 @@ export default function EmployeeDashboard() {
 
   const isInsideGeofence = gpsState === "inside";
 
-  function handleClock() {
-    if (!isInsideGeofence) return;
+  // Writes to the clock_records table through backend/clock-services.
+  // The service takes user_id from the verified auth token, so the client
+  // never sends it - a user can only ever clock themselves in or out.
+  async function handleClock() {
+    if (!isInsideGeofence || clockBusy) return;
 
-    if (!clockedIn) {
-      const start = new Date();
-      setClockInTime(start);
-      setNow(start.getTime());
-      setClockedIn(true);
-      setOnMealBreak(false);
-      setMealStartTime(null);
+    if (!clockedIn && !accountId) {
+      setClockError(siteError || "No site assigned yet.");
       return;
     }
 
-    if (onMealBreak) {
-      const end = new Date();
-      setMealLog((previous) => [
-        ...previous,
-        { start: mealStartTime, end },
-      ]);
-      setOnMealBreak(false);
-      setMealStartTime(null);
-    }
+    setClockBusy(true);
+    setClockError("");
 
-    setClockedIn(false);
-    setClockInTime(null);
+    try {
+      const headers = await getAuthHeaders();
+      if (!headers) {
+        setClockError("You are not signed in.");
+        return;
+      }
+
+      if (!clockedIn) {
+        const res = await fetch("/api/clock", {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            account_id: accountId,
+            lat: lastCoords.lat,
+            lng: lastCoords.lng,
+            outside_geofence: !isInsideGeofence,
+          }),
+        });
+
+        const payload = await res.json().catch(() => null);
+
+        if (!res.ok) {
+          setClockError(payload?.error || "Could not clock in.");
+          return;
+        }
+
+        const start = new Date(payload.record.clock_in_at);
+        setClockRecordId(payload.record.id);
+        setClockInTime(start);
+        setNow(Date.now());
+        setClockedIn(true);
+        setOnMealBreak(false);
+        setMealStartTime(null);
+        return;
+      }
+
+      // Clocking out - close any open meal break first (local only; meal
+      // breaks aren't persisted since clock_records has no break columns).
+      if (onMealBreak) {
+        const end = new Date();
+        setMealLog((previous) => [...previous, { start: mealStartTime, end }]);
+        setOnMealBreak(false);
+        setMealStartTime(null);
+      }
+
+      const res = await fetch("/api/clock", {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({
+          lat: lastCoords.lat,
+          lng: lastCoords.lng,
+        }),
+      });
+
+      const payload = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setClockError(payload?.error || "Could not clock out.");
+        return;
+      }
+
+      setClockedIn(false);
+      setClockInTime(null);
+      setClockRecordId(null);
+    } catch {
+      setClockError("Could not reach the clock service.");
+    } finally {
+      setClockBusy(false);
+    }
   }
 
   function handleMealBreak() {
@@ -383,8 +526,18 @@ export default function EmployeeDashboard() {
                   : "bg-blue-700 hover:-translate-y-0.5 hover:bg-blue-600"
             }`}
           >
-            {clockedIn ? "Clock Out" : "Clock In"}
+            {clockBusy
+              ? "Working..."
+              : clockedIn
+                ? "Clock Out"
+                : "Clock In"}
           </button>
+
+          {clockError && (
+            <p className="max-w-xs text-center text-sm font-medium text-rose-600 dark:text-rose-400">
+              {clockError}
+            </p>
+          )}
 
           {clockedIn && (
             <button
