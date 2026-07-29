@@ -61,14 +61,14 @@ async function findSchedulingConflicts({ user_id, start_time, end_time }) {
       .from("schedules")
       .select("id, start_time, end_time")
       .eq("user_id", user_id)
-      .not("status", "ilike", "cancelled")
+      .neq("status", "cancelled")
       .lt("start_time", end_time)
       .gt("end_time", start_time),
     supabase
       .from("leave_requests")
       .select("id, start_date, end_date")
       .eq("user_id", user_id)
-      .ilike("status", "approved")
+      .eq("status", "approved")
       .lte("start_date", endDate)
       .gte("end_date", startDate),
   ]);
