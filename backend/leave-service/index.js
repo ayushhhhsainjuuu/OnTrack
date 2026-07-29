@@ -18,7 +18,12 @@ app.get("/health", (req, res) =>
 );
 
 app.get("/leave", async (req, res) => {
-  const { data, error } = await supabase.from("leave_requests").select("*");
+  const { data, error } = await supabase
+    .from("leave_requests")
+    .select(
+      "*, employee_user:users!leave_requests_user_fk(full_name, system_role)"
+    )
+    .order("created_at", { ascending: false });
   if (error) return res.status(500).json({ error: error.message });
   res.json(data);
 });
@@ -49,7 +54,9 @@ app.post("/leave", async (req, res) => {
       reason,
       status: "pending",
     })
-    .select();
+    .select(
+      "*, employee_user:users!leave_requests_user_fk(full_name, system_role)"
+    );
   if (error) return res.status(500).json({ error: error.message });
   res.status(201).json(data);
 });
@@ -94,10 +101,17 @@ app.patch("/leave/:id/cancel", async (req, res) => {
 
 // Approve / reject
 app.patch("/leave/:id", async (req, res) => {
+  const { status, reviewed_by, reviewer_notes } = req.body;
+
   const { data, error } = await supabase
     .from("leave_requests")
-    .update({ status: req.body.status })
+    .update({
+      status,
+      reviewed_by: reviewed_by ?? null,
+      reviewer_notes: reviewer_notes ?? null,
+    })
     .eq("id", req.params.id)
+    .eq("status", "pending")
     .select();
   if (error) return res.status(500).json({ error: error.message });
 
