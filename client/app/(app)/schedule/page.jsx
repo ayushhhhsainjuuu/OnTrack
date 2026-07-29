@@ -17,8 +17,6 @@ import LeaveForm from "@/components/leave/LeaveForm";
 import LeaveTable from "@/components/leave/LeaveTable";
 import ManagerReviewQueue from "@/components/leave/ManagerReviewQueue";
 
-const LEAVE_STORAGE_KEY = "ontrack-leave-requests";
-
 /*
   Blue marks an individual-contributor shift (e.g. Cleaner) and
   purple marks a leadership/supervisory shift (e.g. Lead, Foreman).
@@ -102,73 +100,77 @@ const balances = [
 ];
 
 /*
-  These are shared mock requests used to demonstrate
-  the manager review queue.
+  Maps between the UI's display labels/statuses and the actual lowercase
+  enum values allowed by the leave_requests table's check constraints.
 */
-const initialSharedRequests = [
-  {
-    id: "mock-maria-annual",
-    employeeId: "mock-employee-maria",
-    employee: "Maria Lopez",
-    employeeName: "Maria Lopez",
-    employeeRole: "Cleaner",
-    type: "Annual Leave",
-    startDate: "2026-07-24",
-    endDate: "2026-07-25",
-    days: 2,
-    range: "Jul 24 – Jul 25 · 2 days",
-    submitted: "Jul 18",
-    status: "Pending",
-    reason: "Family event outside Calgary.",
-  },
-  {
-    id: "mock-sara-sick",
-    employeeId: "mock-employee-sara",
-    employee: "Sara Ali",
-    employeeName: "Sara Ali",
-    employeeRole: "Cleaner",
-    type: "Sick Leave",
-    startDate: "2026-07-29",
-    endDate: "2026-07-30",
-    days: 2,
-    range: "Jul 29 – Jul 30 · 2 days",
-    submitted: "Jul 19",
-    status: "Pending",
-    reason: "Medical appointment and recovery.",
-  },
-  {
-    id: "mock-henry-personal",
-    employeeId: "mock-employee-henry",
-    employee: "Henry Tran",
-    employeeName: "Henry Tran",
-    employeeRole: "Foreman",
-    type: "Personal Leave",
-    startDate: "2026-08-03",
-    endDate: "2026-08-03",
-    days: 1,
-    range: "Aug 3 · 1 day",
-    submitted: "Jul 16",
-    status: "Approved",
-    reason: "Important personal appointment.",
-  },
-  {
-    id: "mock-anita-annual",
-    employeeId: "mock-employee-anita",
-    employee: "Anita Rao",
-    employeeName: "Anita Rao",
-    employeeRole: "Cleaner",
-    type: "Annual Leave",
-    startDate: "2026-08-10",
-    endDate: "2026-08-12",
-    days: 3,
-    range: "Aug 10 – Aug 12 · 3 days",
-    submitted: "Jul 14",
-    status: "Rejected",
-    reason: "Previously planned vacation.",
-    rejectionNote:
-      "Several employees are already unavailable on these dates.",
-  },
-];
+const LEAVE_TYPE_TO_DB = {
+  "Annual Leave": "vacation",
+  "Sick Leave": "sick",
+  "Personal Leave": "personal",
+  "Unpaid Leave": "unpaid",
+  "Bereavement Leave": "bereavement",
+};
+
+const DB_TYPE_TO_LEAVE_LABEL = {
+  vacation: "Annual Leave",
+  sick: "Sick Leave",
+  personal: "Personal Leave",
+  unpaid: "Unpaid Leave",
+  bereavement: "Bereavement Leave",
+};
+
+const STATUS_TO_DB = {
+  Pending: "pending",
+  Approved: "approved",
+  Rejected: "rejected",
+  Cancelled: "cancelled",
+};
+
+const DB_STATUS_TO_LABEL = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
+};
+
+function calculateLeaveDays(startDate, endDate) {
+  const start = new Date(`${startDate}T00:00:00`);
+  const end = new Date(`${endDate}T00:00:00`);
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+    return 0;
+  }
+
+  return Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+}
+
+/*
+  Converts a raw leave_requests row (with the joined users row for the
+  requester) into the shape LeaveTable / ManagerReviewQueue already expect.
+  Keeps every downstream component unchanged.
+*/
+function mapDbRequestToUi(row) {
+  const requester = row.employee_user || {};
+  const days = calculateLeaveDays(row.start_date, row.end_date);
+
+  return {
+    id: row.id,
+    employeeId: row.user_id,
+    employee: requester.full_name || "Unknown",
+    employeeName: requester.full_name || "Unknown",
+    employeeRole: requester.system_role || "",
+    type: DB_TYPE_TO_LEAVE_LABEL[row.leave_type] || row.leave_type,
+    startDate: row.start_date,
+    endDate: row.end_date,
+    days,
+    range: createRangeLabel(row.start_date, row.end_date, days),
+    submitted: formatSubmittedDate(new Date(row.created_at)),
+    status: DB_STATUS_TO_LABEL[row.status] || row.status,
+    reason: row.reason || "",
+    rejectionNote: row.reviewer_notes || undefined,
+  };
+}
+
 
 const cardClass =
   "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]";
@@ -271,110 +273,6 @@ function normalizeRole(role) {
     .replace(/\s+/g, " ");
 }
 
-function safelyReadStoredRequests() {
-  try {
-    const savedRequests =
-      window.localStorage.getItem(LEAVE_STORAGE_KEY);
-
-    if (!savedRequests) {
-      return null;
-    }
-
-    const parsedRequests = JSON.parse(savedRequests);
-
-    return Array.isArray(parsedRequests)
-      ? parsedRequests
-      : null;
-  } catch (error) {
-    console.error(
-      "Could not read saved leave requests:",
-      error
-    );
-
-    return null;
-  }
-}
-
-function saveRequests(requests) {
-  try {
-    window.localStorage.setItem(
-      LEAVE_STORAGE_KEY,
-      JSON.stringify(requests)
-    );
-  } catch (error) {
-    console.error(
-      "Could not save leave requests:",
-      error
-    );
-  }
-}
-
-function createDemoRequestsForUser(user, name, role) {
-  return [
-    {
-      id: `${user.id}-demo-approved`,
-      employeeId: user.id,
-      employee: name,
-      employeeName: name,
-      employeeRole: role,
-      type: "Annual Leave",
-      startDate: "2026-07-22",
-      endDate: "2026-07-23",
-      days: 2,
-      range: "Jul 22 – Jul 23 · 2 days",
-      submitted: "Jul 15",
-      status: "Approved",
-      reason: "Family event outside the city.",
-    },
-    {
-      id: `${user.id}-demo-sick`,
-      employeeId: user.id,
-      employee: name,
-      employeeName: name,
-      employeeRole: role,
-      type: "Sick Leave",
-      startDate: "2026-07-28",
-      endDate: "2026-07-28",
-      days: 1,
-      range: "Jul 28 · 1 day",
-      submitted: "Jul 18",
-      status: "Pending",
-      reason: "Medical appointment and recovery time.",
-    },
-    {
-      id: `${user.id}-demo-annual`,
-      employeeId: user.id,
-      employee: name,
-      employeeName: name,
-      employeeRole: role,
-      type: "Annual Leave",
-      startDate: "2026-08-04",
-      endDate: "2026-08-07",
-      days: 4,
-      range: "Aug 4 – Aug 7 · 4 days",
-      submitted: "Jul 19",
-      status: "Pending",
-      reason: "Previously planned family trip.",
-    },
-    {
-      id: `${user.id}-demo-rejected`,
-      employeeId: user.id,
-      employee: name,
-      employeeName: name,
-      employeeRole: role,
-      type: "Personal Leave",
-      startDate: "2026-06-12",
-      endDate: "2026-06-12",
-      days: 1,
-      range: "Jun 12 · 1 day",
-      submitted: "Jun 4",
-      status: "Rejected",
-      reason: "Personal appointment.",
-      rejectionNote:
-        "The request overlaps with a high-demand shift.",
-    },
-  ];
-}
 
 export default function SchedulePage() {
   const {
@@ -421,6 +319,16 @@ export default function SchedulePage() {
     normalizedRole.includes("general manager");
 
   /*
+    Owner and General Manager are top-level roles with no one above
+    them to approve leave, so they cannot file their own leave request.
+    They can still review everyone else's requests below.
+  */
+  const canSubmitLeave =
+    normalizedRole !== "owner" &&
+    normalizedRole !== "gm" &&
+    !normalizedRole.includes("general manager");
+
+  /*
     Hierarchy-based permission: only roles that can manage at least
     one other role (per getAssignableRolesFor) see the Create
     Schedule tab.
@@ -437,102 +345,46 @@ export default function SchedulePage() {
     : ["schedule", "leave"];
 
   /*
-    Load shared leave requests after Supabase has loaded
-    the currently authenticated user.
+    Load leave requests from Supabase after the currently authenticated
+    user is known. RLS already scopes which rows come back: a Cleaner
+    only gets their own rows, every other role gets everyone's.
   */
   useEffect(() => {
     if (isLoading || !user) {
       return;
     }
 
-    const storedRequests =
-      safelyReadStoredRequests();
+    let cancelled = false;
 
-    let nextRequests =
-      storedRequests || [...initialSharedRequests];
+    async function loadLeaveRequests() {
+      const { data, error } = await supabase
+        .from("leave_requests")
+        .select(
+          "*, employee_user:users!leave_requests_user_fk(full_name, system_role)"
+        )
+        .order("created_at", { ascending: false });
 
-    /*
-      Give each logged-in user their own initial mock
-      request history only once.
-    */
-    const userAlreadyHasRequests =
-      nextRequests.some(
-        (request) =>
-          request.employeeId === user.id
-      );
-
-    if (!userAlreadyHasRequests) {
-      nextRequests = [
-        ...createDemoRequestsForUser(
-          user,
-          name,
-          role
-        ),
-        ...nextRequests,
-      ];
-    }
-
-    setAllLeaveRequests(nextRequests);
-    saveRequests(nextRequests);
-    setStorageReady(true);
-  }, [
-    isLoading,
-    user,
-    name,
-    role,
-  ]);
-
-  /*
-    Save every approval, rejection, cancellation,
-    and new request to localStorage.
-  */
-  useEffect(() => {
-    if (!storageReady) {
-      return;
-    }
-
-    saveRequests(allLeaveRequests);
-  }, [allLeaveRequests, storageReady]);
-
-  /*
-    This also keeps separate browser tabs synchronized.
-  */
-  useEffect(() => {
-    const handleStorageChange = (event) => {
-      if (
-        event.key !== LEAVE_STORAGE_KEY ||
-        !event.newValue
-      ) {
+      if (cancelled) {
         return;
       }
 
-      try {
-        const updatedRequests =
-          JSON.parse(event.newValue);
-
-        if (Array.isArray(updatedRequests)) {
-          setAllLeaveRequests(updatedRequests);
-        }
-      } catch (error) {
-        console.error(
-          "Could not synchronize leave requests:",
-          error
-        );
+      if (error) {
+        console.error("Failed to load leave requests:", error);
+        setAllLeaveRequests([]);
+        setStorageReady(true);
+        return;
       }
-    };
 
-    window.addEventListener(
-      "storage",
-      handleStorageChange
-    );
+      setAllLeaveRequests((data || []).map(mapDbRequestToUi));
+      setStorageReady(true);
+    }
+
+    loadLeaveRequests();
 
     return () => {
-      window.removeEventListener(
-        "storage",
-        handleStorageChange
-      );
+      cancelled = true;
     };
-  }, []);
+  }, [isLoading, user]);
 
   /*
     A normal employee sees only requests belonging to them.
@@ -749,35 +601,40 @@ export default function SchedulePage() {
     }, 4000);
   };
 
-  const handleNewLeaveRequest = (request) => {
+  // Submit: INSERT a new pending leave request into Supabase, then
+  // add the returned row to the list. Errors are logged + shown to user.
+  const handleNewLeaveRequest = async (request) => {
     if (!user) {
       return;
     }
 
-    const newRequest = {
-      id: `${user.id}-${Date.now()}`,
-      employeeId: user.id,
-      employee: name,
-      employeeName: name,
-      employeeRole: role,
-      type: request.type,
-      startDate: request.startDate,
-      endDate: request.endDate,
-      days: request.days,
-      range: createRangeLabel(
-        request.startDate,
-        request.endDate,
-        request.days
-      ),
-      submitted: formatSubmittedDate(
-        new Date()
-      ),
-      status: "Pending",
-      reason: request.reason,
-    };
+    const dbType = LEAVE_TYPE_TO_DB[request.type] || "personal";
+
+    const { data, error } = await supabase
+      .from("leave_requests")
+      .insert({
+        user_id: user.id,
+        leave_type: dbType,
+        start_date: request.startDate,
+        end_date: request.endDate,
+        status: "pending",
+        reason: request.reason,
+      })
+      .select(
+        "*, employee_user:users!leave_requests_user_fk(full_name, system_role)"
+      )
+      .single();
+
+    if (error) {
+      console.error("Failed to submit leave request:", error);
+      showSuccessMessage(
+        "Something went wrong submitting your request. Please try again."
+      );
+      return;
+    }
 
     setAllLeaveRequests((current) => [
-      newRequest,
+      mapDbRequestToUi(data),
       ...current,
     ]);
 
@@ -786,7 +643,9 @@ export default function SchedulePage() {
     );
   };
 
-  const handleCancelRequest = (requestId) => {
+  // Cancel: UPDATE the request's status to 'cancelled' in Supabase.
+  // Only works on your own pending request (also enforced by RLS).
+  const handleCancelRequest = async (requestId) => {
     const requestToCancel =
       allLeaveRequests.find(
         (request) =>
@@ -809,6 +668,16 @@ export default function SchedulePage() {
       return;
     }
 
+    const { error } = await supabase
+      .from("leave_requests")
+      .update({ status: "cancelled" })
+      .eq("id", requestId);
+
+    if (error) {
+      console.error("Failed to cancel leave request:", error);
+      return;
+    }
+
     setAllLeaveRequests((current) =>
       current.map((request) =>
         request.id === requestId
@@ -828,7 +697,24 @@ export default function SchedulePage() {
   /*
     ManagerReviewQueue calls onApprove(request.id).
   */
-  const handleApproveRequest = (requestId) => {
+  // Approve (manager only): UPDATE status to 'approved' and record who
+  // reviewed it. The .eq("status","pending") guards against double-review.
+  const handleApproveRequest = async (requestId) => {
+    const { error } = await supabase
+      .from("leave_requests")
+      .update({
+        status: "approved",
+        reviewed_by: user?.id,
+        reviewer_notes: null,
+      })
+      .eq("id", requestId)
+      .eq("status", "pending");
+
+    if (error) {
+      console.error("Failed to approve leave request:", error);
+      return;
+    }
+
     setAllLeaveRequests((current) =>
       current.map((request) =>
         request.id === requestId &&
@@ -854,7 +740,9 @@ export default function SchedulePage() {
     ManagerReviewQueue calls:
     onReject(requestId, rejectionNote)
   */
-  const handleRejectRequest = (
+  // Reject (manager only): UPDATE status to 'rejected' and save the
+  // manager's rejection note. Requires a non-empty note.
+  const handleRejectRequest = async (
     requestId,
     rejectionNote
   ) => {
@@ -862,6 +750,21 @@ export default function SchedulePage() {
       String(rejectionNote || "").trim();
 
     if (!cleanedNote) {
+      return;
+    }
+
+    const { error } = await supabase
+      .from("leave_requests")
+      .update({
+        status: "rejected",
+        reviewed_by: user?.id,
+        reviewer_notes: cleanedNote,
+      })
+      .eq("id", requestId)
+      .eq("status", "pending");
+
+    if (error) {
+      console.error("Failed to reject leave request:", error);
       return;
     }
 
@@ -1019,41 +922,47 @@ export default function SchedulePage() {
             ))}
           </div>
 
-          <section className="space-y-4">
-            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                  My leave requests
-                </h2>
+          {/* "My leave requests" + New Request button: shown to everyone
+              EXCEPT Owner/GM (they can't file their own leave). */}
+          {canSubmitLeave && (
+            <section className="space-y-4">
+              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                    My leave requests
+                  </h2>
 
-                <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                  View pending and previous requests
-                  or submit a new one.
-                </p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                    View pending and previous requests
+                    or submit a new one.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setLeaveFormOpen(true)
+                  }
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-500"
+                >
+                  <Plus size={16} />
+                  New Request
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  setLeaveFormOpen(true)
+              <LeaveTable
+                requests={
+                  employeeLeaveRequests
                 }
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-500"
-              >
-                <Plus size={16} />
-                New Request
-              </button>
-            </div>
+                onCancel={
+                  handleCancelRequest
+                }
+              />
+            </section>
+          )}
 
-            <LeaveTable
-              requests={
-                employeeLeaveRequests
-              }
-              onCancel={
-                handleCancelRequest
-              }
-            />
-          </section>
-
+          {/* Manager review queue: shown to Owner/GM/Foreman so they can
+              approve or reject other people's leave requests. */}
           {canReviewLeaveRequests && (
             <section className="border-t border-gray-200 pt-6 dark:border-slate-700">
               <ManagerReviewQueue
