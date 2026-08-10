@@ -235,17 +235,17 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-gray-900 transition-colors duration-200 dark:bg-[#07111f] dark:text-slate-100">
+    <div className="min-h-screen bg-[#f8fafc] text-gray-900 transition-colors duration-200 dark:bg-[#0F172A] dark:text-[#F8FAFC]">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col bg-[#0b1b3f] text-white transition-transform duration-200 dark:bg-[#07152f] md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[#E2E8F0] bg-white text-gray-900 transition-transform duration-200 dark:border-zinc-800 dark:bg-[#0A0A0A] dark:text-slate-100 md:translate-x-0 ${
           open
             ? "translate-x-0"
             : "-translate-x-full"
         }`}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2.5 border-b border-white/10 px-6">
+        <div className="flex h-16 items-center gap-2.5 border-b border-[#E2E8F0] px-6 dark:border-zinc-800">
           <img
             src="/ontrack-logo.png"
             alt="OnTrack"
@@ -278,10 +278,10 @@ export default function DashboardLayout({
                   onClick={() =>
                     setOpen(false)
                   }
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
                     active
-                      ? "bg-[#2563eb] text-white shadow-lg"
-                      : "text-slate-300 hover:bg-[#16294f] hover:text-white dark:hover:bg-[#132748]"
+                      ? "bg-[#EFF6FF] text-[#2563EB] dark:border dark:border-zinc-700 dark:bg-[#262626] dark:text-white"
+                      : "text-[#1E293B] hover:bg-[#EFF6FF] hover:text-[#2563EB] dark:text-[#CBD5E1] dark:hover:bg-[#171717] dark:hover:text-white"
                   }`}
                 >
                   <Icon size={18} />
@@ -289,7 +289,7 @@ export default function DashboardLayout({
                   {label}
 
                   {active && (
-                    <span className="ml-auto text-white/70">
+                    <span className="ml-auto text-[#2563EB]/70 dark:text-white/70">
                       ›
                     </span>
                   )}
@@ -300,9 +300,9 @@ export default function DashboardLayout({
         </nav>
 
         {/* User card */}
-        <div className="border-t border-white/10 p-3">
-          <div className="flex items-center gap-3 rounded-xl bg-white/5 px-3 py-2.5">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold">
+        <div className="border-t border-[#E2E8F0] p-3 dark:border-zinc-800">
+          <div className="flex items-center gap-3 rounded-xl bg-gray-100 px-3 py-2.5 dark:border dark:border-[#262626] dark:bg-[#171717]">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold text-white">
               {isLoading ? (
                 <Loader2
                   size={16}
@@ -320,7 +320,7 @@ export default function DashboardLayout({
                   : name}
               </p>
 
-              <p className="truncate text-xs text-slate-400">
+              <p className="truncate text-xs text-gray-500 dark:text-slate-400">
                 {isLoading
                   ? "Checking account"
                   : role}
@@ -340,10 +340,10 @@ export default function DashboardLayout({
 
       {/* Main column */}
       <div className="md:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center border-b border-gray-200 bg-white/80 px-4 backdrop-blur transition-colors duration-200 dark:border-slate-700 dark:bg-[#111c2d]/90 md:px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center border-b border-gray-200 bg-white/80 px-4 backdrop-blur transition-colors duration-200 dark:border-zinc-800 dark:bg-[#121212]/90 md:px-8">
           <button
             type="button"
-            className="-ml-2 rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-700 md:hidden"
+            className="-ml-2 rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-[#1a1a1a] md:hidden"
             onClick={() => setOpen(true)}
             aria-label="Open navigation"
           >
@@ -365,7 +365,7 @@ export default function DashboardLayout({
                     (current) => !current
                   )
                 }
-                className="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-slate-700"
+                className="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-[#1a1a1a]"
                 aria-label={`Notifications, ${unreadCount} unread`}
                 aria-expanded={
                   notificationsOpen
@@ -374,7 +374,7 @@ export default function DashboardLayout({
                 <Bell size={20} />
 
                 {unreadCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold leading-none text-white dark:border-[#111c2d]">
+                  <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold leading-none text-white dark:border-[#121212]">
                     {unreadCount > 9
                       ? "9+"
                       : unreadCount}
@@ -383,9 +383,9 @@ export default function DashboardLayout({
               </button>
 
               {notificationsOpen && (
-                <div className="fixed left-4 right-4 top-16 z-50 mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#111c2d] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:w-[390px]">
+                <div className="fixed left-4 right-4 top-16 z-50 mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#171717] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:w-[390px]">
                   {/* Header */}
-                  <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-slate-700">
+                  <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-zinc-800">
                     <div>
                       <h2 className="text-sm font-bold text-gray-900 dark:text-white">
                         Notifications
@@ -410,7 +410,7 @@ export default function DashboardLayout({
                           false
                         )
                       }
-                      className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+                      className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:text-slate-500 dark:hover:bg-[#1a1a1a] dark:hover:text-slate-200"
                       aria-label="Close notifications"
                     >
                       <X size={18} />
@@ -422,7 +422,7 @@ export default function DashboardLayout({
                     {notifications.length ===
                     0 ? (
                       <div className="px-6 py-12 text-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-slate-800 dark:text-slate-500">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-[#1a1a1a] dark:text-slate-500">
                           <Bell size={21} />
                         </div>
 
@@ -449,9 +449,9 @@ export default function DashboardLayout({
                                 notification.id
                               )
                             }
-                            className={`flex w-full gap-3 border-b border-gray-100 px-5 py-4 text-left transition last:border-0 dark:border-slate-700 ${
+                            className={`flex w-full gap-3 border-b border-gray-100 px-5 py-4 text-left transition last:border-0 dark:border-zinc-800 ${
                               notification.read
-                                ? "bg-white hover:bg-gray-50 dark:bg-[#111c2d] dark:hover:bg-slate-800/70"
+                                ? "bg-white hover:bg-gray-50 dark:bg-[#171717] dark:hover:bg-[#1a1a1a]"
                                 : "bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-950/20 dark:hover:bg-blue-950/30"
                             }`}
                           >
@@ -494,7 +494,7 @@ export default function DashboardLayout({
 
                   {/* Footer */}
                   {notifications.length > 0 && (
-                    <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-slate-700">
+                    <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-zinc-800">
                       <button
                         type="button"
                         onClick={markAllAsRead}
@@ -514,7 +514,7 @@ export default function DashboardLayout({
                         onClick={
                           clearNotifications
                         }
-                        className="rounded-lg px-3 py-2 text-xs font-semibold text-gray-500 transition hover:bg-gray-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-red-400"
+                        className="rounded-lg px-3 py-2 text-xs font-semibold text-gray-500 transition hover:bg-gray-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-[#1a1a1a] dark:hover:text-red-400"
                       >
                         Clear all
                       </button>

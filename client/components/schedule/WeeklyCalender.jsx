@@ -46,7 +46,7 @@ function formatMonthHeading(startDate, endDate) {
 }
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]";
+  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]";
 
 export default function WeeklyCalender({
   week = [],
