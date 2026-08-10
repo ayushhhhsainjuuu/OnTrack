@@ -297,6 +297,16 @@ export default function SchedulePage() {
   const [storageReady, setStorageReady] =
     useState(false);
 
+  /*
+    Leave requests now go through the leave-service microservice
+    (backend/leave-service, port 4003) via /api/leave instead of
+    hitting Supabase directly. null = still checking, so the leave
+    section waits for the service's /health to respond before it
+    renders any leave data or the New Request form.
+  */
+  const [leaveServiceUp, setLeaveServiceUp] =
+    useState(null);
+
   const [successMessage, setSuccessMessage] =
     useState("");
 
@@ -345,31 +355,90 @@ export default function SchedulePage() {
     : ["schedule", "leave"];
 
   /*
-    Load leave requests from Supabase after the currently authenticated
-    user is known. RLS already scopes which rows come back: a Cleaner
-    only gets their own rows, every other role gets everyone's.
+    Poll /api/leave/health (proxied to the leave-service microservice,
+    port 4003) until it responds. The leave section below waits on
+    leaveServiceUp before rendering or loading any data.
   */
   useEffect(() => {
-    if (isLoading || !user) {
+    let cancelled = false;
+    let retryTimeoutId;
+
+    async function checkLeaveServiceHealth() {
+      let up = false;
+
+      try {
+        const response = await fetch("/api/leave/health");
+        up = response.ok;
+      } catch {
+        up = false;
+      }
+
+      if (cancelled) {
+        return;
+      }
+
+      setLeaveServiceUp(up);
+
+      if (!up) {
+        retryTimeoutId = window.setTimeout(
+          checkLeaveServiceHealth,
+          3000
+        );
+      }
+    }
+
+    checkLeaveServiceHealth();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(retryTimeoutId);
+    };
+  }, []);
+
+  /*
+    Load leave requests via /api/leave (proxied to leave-service) once
+    the currently authenticated user is known AND the leave service's
+    port has confirmed it's up.
+  */
+  useEffect(() => {
+    if (isLoading || !user || leaveServiceUp !== true) {
       return;
     }
 
     let cancelled = false;
 
     async function loadLeaveRequests() {
-      const { data, error } = await supabase
-        .from("leave_requests")
-        .select(
-          "*, employee_user:users!leave_requests_user_fk(full_name, system_role)"
-        )
-        .order("created_at", { ascending: false });
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      let response;
+
+      try {
+        response = await fetch("/api/leave", {
+          headers: session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : undefined,
+        });
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Failed to load leave requests:", error);
+        setAllLeaveRequests([]);
+        setStorageReady(true);
+        return;
+      }
+
+      const data = await response.json().catch(() => null);
 
       if (cancelled) {
         return;
       }
 
-      if (error) {
-        console.error("Failed to load leave requests:", error);
+      if (!response.ok) {
+        console.error(
+          "Failed to load leave requests:",
+          data?.error || response.statusText
+        );
         setAllLeaveRequests([]);
         setStorageReady(true);
         return;
@@ -384,7 +453,7 @@ export default function SchedulePage() {
     return () => {
       cancelled = true;
     };
-  }, [isLoading, user]);
+  }, [isLoading, user, leaveServiceUp]);
 
   /*
     A normal employee sees only requests belonging to them.
@@ -601,8 +670,24 @@ export default function SchedulePage() {
     }, 4000);
   };
 
-  // Submit: INSERT a new pending leave request into Supabase, then
-  // add the returned row to the list. Errors are logged + shown to user.
+  // Forwards the browser's Supabase session token to /api/leave, same as
+  // the schedule-loading effect above does for /api/schedule.
+  async function buildLeaveAuthHeaders() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    const headers = { "Content-Type": "application/json" };
+
+    if (session?.access_token) {
+      headers.Authorization = `Bearer ${session.access_token}`;
+    }
+
+    return headers;
+  }
+
+  // Submit: POST a new pending leave request through /api/leave (proxied
+  // to leave-service), then add the returned row to the list.
   const handleNewLeaveRequest = async (request) => {
     if (!user) {
       return;
@@ -610,22 +695,21 @@ export default function SchedulePage() {
 
     const dbType = LEAVE_TYPE_TO_DB[request.type] || "personal";
 
-    const { data, error } = await supabase
-      .from("leave_requests")
-      .insert({
-        user_id: user.id,
-        leave_type: dbType,
-        start_date: request.startDate,
-        end_date: request.endDate,
-        status: "pending",
-        reason: request.reason,
-      })
-      .select(
-        "*, employee_user:users!leave_requests_user_fk(full_name, system_role)"
-      )
-      .single();
+    let response;
 
-    if (error) {
+    try {
+      response = await fetch("/api/leave", {
+        method: "POST",
+        headers: await buildLeaveAuthHeaders(),
+        body: JSON.stringify({
+          user_id: user.id,
+          leave_type: dbType,
+          start_date: request.startDate,
+          end_date: request.endDate,
+          reason: request.reason,
+        }),
+      });
+    } catch (error) {
       console.error("Failed to submit leave request:", error);
       showSuccessMessage(
         "Something went wrong submitting your request. Please try again."
@@ -633,8 +717,20 @@ export default function SchedulePage() {
       return;
     }
 
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      console.error("Failed to submit leave request:", data?.error);
+      showSuccessMessage(
+        "Something went wrong submitting your request. Please try again."
+      );
+      return;
+    }
+
+    const created = Array.isArray(data) ? data[0] : data;
+
     setAllLeaveRequests((current) => [
-      mapDbRequestToUi(data),
+      mapDbRequestToUi(created),
       ...current,
     ]);
 
@@ -643,8 +739,8 @@ export default function SchedulePage() {
     );
   };
 
-  // Cancel: UPDATE the request's status to 'cancelled' in Supabase.
-  // Only works on your own pending request (also enforced by RLS).
+  // Cancel: PATCH the request's status to 'cancelled' via /api/leave.
+  // Only works on your own pending request (also enforced by leave-service).
   const handleCancelRequest = async (requestId) => {
     const requestToCancel =
       allLeaveRequests.find(
@@ -668,13 +764,25 @@ export default function SchedulePage() {
       return;
     }
 
-    const { error } = await supabase
-      .from("leave_requests")
-      .update({ status: "cancelled" })
-      .eq("id", requestId);
+    let response;
 
-    if (error) {
+    try {
+      response = await fetch(
+        `/api/leave?id=${requestId}&action=cancel`,
+        {
+          method: "PATCH",
+          headers: await buildLeaveAuthHeaders(),
+          body: JSON.stringify({ user_id: user.id }),
+        }
+      );
+    } catch (error) {
       console.error("Failed to cancel leave request:", error);
+      return;
+    }
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      console.error("Failed to cancel leave request:", data?.error);
       return;
     }
 
@@ -697,21 +805,29 @@ export default function SchedulePage() {
   /*
     ManagerReviewQueue calls onApprove(request.id).
   */
-  // Approve (manager only): UPDATE status to 'approved' and record who
-  // reviewed it. The .eq("status","pending") guards against double-review.
+  // Approve (manager only): PATCH status to 'approved' via /api/leave.
+  // leave-service guards against double-review (status must be "pending").
   const handleApproveRequest = async (requestId) => {
-    const { error } = await supabase
-      .from("leave_requests")
-      .update({
-        status: "approved",
-        reviewed_by: user?.id,
-        reviewer_notes: null,
-      })
-      .eq("id", requestId)
-      .eq("status", "pending");
+    let response;
 
-    if (error) {
+    try {
+      response = await fetch(`/api/leave?id=${requestId}`, {
+        method: "PATCH",
+        headers: await buildLeaveAuthHeaders(),
+        body: JSON.stringify({
+          status: "approved",
+          reviewed_by: user?.id,
+          reviewer_notes: null,
+        }),
+      });
+    } catch (error) {
       console.error("Failed to approve leave request:", error);
+      return;
+    }
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      console.error("Failed to approve leave request:", data?.error);
       return;
     }
 
@@ -740,8 +856,8 @@ export default function SchedulePage() {
     ManagerReviewQueue calls:
     onReject(requestId, rejectionNote)
   */
-  // Reject (manager only): UPDATE status to 'rejected' and save the
-  // manager's rejection note. Requires a non-empty note.
+  // Reject (manager only): PATCH status to 'rejected' via /api/leave and
+  // save the manager's rejection note. Requires a non-empty note.
   const handleRejectRequest = async (
     requestId,
     rejectionNote
@@ -753,18 +869,26 @@ export default function SchedulePage() {
       return;
     }
 
-    const { error } = await supabase
-      .from("leave_requests")
-      .update({
-        status: "rejected",
-        reviewed_by: user?.id,
-        reviewer_notes: cleanedNote,
-      })
-      .eq("id", requestId)
-      .eq("status", "pending");
+    let response;
 
-    if (error) {
+    try {
+      response = await fetch(`/api/leave?id=${requestId}`, {
+        method: "PATCH",
+        headers: await buildLeaveAuthHeaders(),
+        body: JSON.stringify({
+          status: "rejected",
+          reviewed_by: user?.id,
+          reviewer_notes: cleanedNote,
+        }),
+      });
+    } catch (error) {
       console.error("Failed to reject leave request:", error);
+      return;
+    }
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      console.error("Failed to reject leave request:", data?.error);
       return;
     }
 
@@ -786,11 +910,11 @@ export default function SchedulePage() {
     );
   };
 
-  if (isLoading || !storageReady || scheduleLoading) {
+  if (isLoading || scheduleLoading) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
         <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
-          Loading schedule and leave requests...
+          Loading schedule...
         </p>
       </div>
     );
@@ -922,61 +1046,79 @@ export default function SchedulePage() {
             ))}
           </div>
 
-          {/* "My leave requests" + New Request button: shown to everyone
-              EXCEPT Owner/GM (they can't file their own leave). */}
-          {canSubmitLeave && (
-            <section className="space-y-4">
-              <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                <div>
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
-                    My leave requests
-                  </h2>
+          {/*
+            Leave requests are served by the leave-service microservice
+            (port 4003). Nothing below renders until /api/leave/health
+            confirms the service's port is actually up, then waits for
+            the initial /api/leave load to finish.
+          */}
+          {leaveServiceUp !== true ? (
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#111c2d] dark:text-slate-400">
+              Waiting for the leave service to come online…
+            </div>
+          ) : !storageReady ? (
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#111c2d] dark:text-slate-400">
+              Loading leave requests…
+            </div>
+          ) : (
+            <>
+              {/* "My leave requests" + New Request button: shown to everyone
+                  EXCEPT Owner/GM (they can't file their own leave). */}
+              {canSubmitLeave && (
+                <section className="space-y-4">
+                  <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                        My leave requests
+                      </h2>
 
-                  <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-                    View pending and previous requests
-                    or submit a new one.
-                  </p>
-                </div>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                        View pending and previous requests
+                        or submit a new one.
+                      </p>
+                    </div>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setLeaveFormOpen(true)
-                  }
-                  className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-500"
-                >
-                  <Plus size={16} />
-                  New Request
-                </button>
-              </div>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setLeaveFormOpen(true)
+                      }
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-500"
+                    >
+                      <Plus size={16} />
+                      New Request
+                    </button>
+                  </div>
 
-              <LeaveTable
-                requests={
-                  employeeLeaveRequests
-                }
-                onCancel={
-                  handleCancelRequest
-                }
-              />
-            </section>
-          )}
+                  <LeaveTable
+                    requests={
+                      employeeLeaveRequests
+                    }
+                    onCancel={
+                      handleCancelRequest
+                    }
+                  />
+                </section>
+              )}
 
-          {/* Manager review queue: shown to Owner/GM/Foreman so they can
-              approve or reject other people's leave requests. */}
-          {canReviewLeaveRequests && (
-            <section className="border-t border-gray-200 pt-6 dark:border-slate-700">
-              <ManagerReviewQueue
-                requests={
-                  managerLeaveRequests
-                }
-                onApprove={
-                  handleApproveRequest
-                }
-                onReject={
-                  handleRejectRequest
-                }
-              />
-            </section>
+              {/* Manager review queue: shown to Owner/GM/Foreman so they can
+                  approve or reject other people's leave requests. */}
+              {canReviewLeaveRequests && (
+                <section className="border-t border-gray-200 pt-6 dark:border-slate-700">
+                  <ManagerReviewQueue
+                    requests={
+                      managerLeaveRequests
+                    }
+                    onApprove={
+                      handleApproveRequest
+                    }
+                    onReject={
+                      handleRejectRequest
+                    }
+                  />
+                </section>
+              )}
+            </>
           )}
         </div>
       )}

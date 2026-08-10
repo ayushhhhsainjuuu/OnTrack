@@ -5,6 +5,7 @@ import { generateSummary } from "./claudeClient.js";
 import { fetchSummaryContext } from "./dataFetch.js";
 import { anonymizeContext } from "./anonymize.js";
 import { formatContext } from "./formatContext.js";
+import { buildAnalytics } from "./analytics.js";
 
 const app = express();
 app.use(cors());
@@ -15,6 +16,20 @@ const PORT = process.env.PORT || 4005;
 app.get("/health", (req, res) => res.json({ status: "ok", service: "ai" }));
 
 app.use("/ai", requireAuth, requireManagerRole);
+
+// Chart-ready analytics for the dashboard, scoped to what the requesting
+// manager can see. Uses the same clock_in_at / clock_out_at columns and the
+// same 2-hour shift-matching window as the client-side analytics code.
+app.get("/ai/analytics", async (req, res) => {
+  const weeks = Number.parseInt(req.query.weeks, 10) || 6;
+
+  try {
+    const data = await buildAnalytics({ user: req.user, weeks });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Returns the raw, unanonymized, unformatted context for a given date
 // range, scoped to what the requesting manager can see. Intended for
