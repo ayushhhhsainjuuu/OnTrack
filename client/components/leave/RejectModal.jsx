@@ -44,7 +44,7 @@ export default function RejectModal({
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 px-4 py-8">
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#111c2d]">
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#1E293B]">
         <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5 dark:border-slate-700">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400">
