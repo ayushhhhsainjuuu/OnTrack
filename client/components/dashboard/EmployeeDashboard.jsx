@@ -213,7 +213,6 @@ export default function EmployeeDashboard() {
   // account_id and no project_id is rejected by the database. Resolved from
   // account_members (open read policy, same as CreateScheduleForm's
   // accounts fetch) rather than asking the employee to pick one each time.
-  const [userId, setUserId] = useState(null);
   const [accountId, setAccountId] = useState(null);
   const [siteName, setSiteName] = useState("");
   const [siteError, setSiteError] = useState("");
