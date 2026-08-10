@@ -91,14 +91,26 @@ app.get("/clock", async (req, res) => {
 });
 
 // POST /clock/in
-// Body: { account_id?, project_id?, lat?, lng?, outside_geofence?, notes? }
+// Body: { account_id?, project_id?, lat?, lng?, outside_geofence?, notes?, photo_url? }
+//
+// photo_url is the path returned by the client after it uploads a clock-in
+// selfie to the "clock-photos" storage bucket (client uploads it directly to
+// Supabase Storage under its own auth session, then sends us the resulting
+// path/URL - this service never touches image bytes).
 //
 // NOTE: the real clock_records columns are clock_in_at / clock_out_at (the
 // previous version of this file wrote clock_in / clock_out, which don't
 // exist on the table - those inserts were being rejected by Postgres).
 app.post("/clock/in", async (req, res) => {
-  const { account_id, project_id, lat, lng, outside_geofence, notes } =
-    req.body || {};
+  const {
+    account_id,
+    project_id,
+    lat,
+    lng,
+    outside_geofence,
+    notes,
+    photo_url,
+  } = req.body || {};
 
   // Refuse to open a second record if one is already open.
   const { data: existing } = await supabase
@@ -109,12 +121,10 @@ app.post("/clock/in", async (req, res) => {
     .limit(1);
 
   if (existing?.length) {
-    return res
-      .status(409)
-      .json({
-        error: "You are already clocked in.",
-        record_id: existing[0].id,
-      });
+    return res.status(409).json({
+      error: "You are already clocked in.",
+      record_id: existing[0].id,
+    });
   }
 
   const { data, error } = await supabase
@@ -129,6 +139,7 @@ app.post("/clock/in", async (req, res) => {
       outside_geofence: Boolean(outside_geofence),
       notification_sent: false,
       notes: notes ?? null,
+      photo_url: photo_url ?? null,
     })
     .select()
     .single();

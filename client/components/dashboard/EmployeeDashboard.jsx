@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
+import ClockPhotoCapture from "./ClockPhotoCapture";
 
 const OFFICE_LAT = 51.06474583312273;
 const OFFICE_LNG = -114.08930946420794;
@@ -153,6 +154,15 @@ export default function EmployeeDashboard() {
   const [clockError, setClockError] = useState("");
   const [lastCoords, setLastCoords] = useState({ lat: null, lng: null });
 
+  // The signed-in user's id, needed to namespace uploads in the
+  // "clock-photos" storage bucket (clock-photos/{user_id}/...).
+  const [userId, setUserId] = useState(null);
+
+  // Shows the webcam capture modal before a clock-in is submitted. Clock-in
+  // proof of presence is required, so the request to /api/clock only fires
+  // once a photo has been captured and uploaded.
+  const [showPhotoCapture, setShowPhotoCapture] = useState(false);
+
   // The site (account) this employee clocks into. clock_records has a
   // "clock_records_site_required" check constraint - a clock-in with no
   // account_id and no project_id is rejected by the database. Resolved from
@@ -166,13 +176,15 @@ export default function EmployeeDashboard() {
 
     (async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id;
-      if (!userId) return;
+      const uid = session?.user?.id;
+      if (!uid) return;
+
+      if (!cancelled) setUserId(uid);
 
       const { data, error } = await supabase
         .from("account_members")
         .select("account_id")
-        .eq("user_id", userId)
+        .eq("user_id", uid)
         .is("end_date", null)
         .limit(1);
 
@@ -275,17 +287,34 @@ export default function EmployeeDashboard() {
 
   const isInsideGeofence = gpsState === "inside";
 
-  // Writes to the clock_records table through backend/clock-services.
-  // The service takes user_id from the verified auth token, so the client
-  // never sends it - a user can only ever clock themselves in or out.
+  // Entry point for the Clock In / Clock Out button. Clocking in requires
+  // proof-of-presence, so this only opens the photo capture modal; the
+  // actual POST happens in submitClockIn once a photo is uploaded.
+  // Clocking out has no photo requirement and proceeds immediately.
   async function handleClock() {
     if (!isInsideGeofence || clockBusy) return;
 
-    if (!clockedIn && !accountId) {
-      setClockError(siteError || "No site assigned yet.");
+    if (!clockedIn) {
+      if (!accountId) {
+        setClockError(siteError || "No site assigned yet.");
+        return;
+      }
+      if (!userId) {
+        setClockError("You are not signed in.");
+        return;
+      }
+      setClockError("");
+      setShowPhotoCapture(true);
       return;
     }
 
+    await submitClockOut();
+  }
+
+  // Writes to the clock_records table through backend/clock-services.
+  // The service takes user_id from the verified auth token, so the client
+  // never sends it - a user can only ever clock themselves in or out.
+  async function submitClockIn(photoPath) {
     setClockBusy(true);
     setClockError("");
 
@@ -296,32 +325,47 @@ export default function EmployeeDashboard() {
         return;
       }
 
-      if (!clockedIn) {
-        const res = await fetch("/api/clock", {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            account_id: accountId,
-            lat: lastCoords.lat,
-            lng: lastCoords.lng,
-            outside_geofence: !isInsideGeofence,
-          }),
-        });
+      const res = await fetch("/api/clock", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          account_id: accountId,
+          lat: lastCoords.lat,
+          lng: lastCoords.lng,
+          outside_geofence: !isInsideGeofence,
+          photo_url: photoPath,
+        }),
+      });
 
-        const payload = await res.json().catch(() => null);
+      const payload = await res.json().catch(() => null);
 
-        if (!res.ok) {
-          setClockError(payload?.error || "Could not clock in.");
-          return;
-        }
+      if (!res.ok) {
+        setClockError(payload?.error || "Could not clock in.");
+        return;
+      }
 
-        const start = new Date(payload.record.clock_in_at);
-        setClockRecordId(payload.record.id);
-        setClockInTime(start);
-        setNow(Date.now());
-        setClockedIn(true);
-        setOnMealBreak(false);
-        setMealStartTime(null);
+      const start = new Date(payload.record.clock_in_at);
+      setClockRecordId(payload.record.id);
+      setClockInTime(start);
+      setNow(Date.now());
+      setClockedIn(true);
+      setOnMealBreak(false);
+      setMealStartTime(null);
+    } catch {
+      setClockError("Could not reach the clock service.");
+    } finally {
+      setClockBusy(false);
+    }
+  }
+
+  async function submitClockOut() {
+    setClockBusy(true);
+    setClockError("");
+
+    try {
+      const headers = await getAuthHeaders();
+      if (!headers) {
+        setClockError("You are not signed in.");
         return;
       }
 
@@ -358,6 +402,15 @@ export default function EmployeeDashboard() {
     } finally {
       setClockBusy(false);
     }
+  }
+
+  function handlePhotoCaptured(photoPath) {
+    setShowPhotoCapture(false);
+    submitClockIn(photoPath);
+  }
+
+  function handlePhotoCancel() {
+    setShowPhotoCapture(false);
   }
 
   function handleMealBreak() {
@@ -435,6 +488,14 @@ export default function EmployeeDashboard() {
 
   return (
     <div className="space-y-6">
+      {showPhotoCapture && userId && (
+        <ClockPhotoCapture
+          userId={userId}
+          onCaptured={handlePhotoCaptured}
+          onCancel={handlePhotoCancel}
+        />
+      )}
+
       {gpsState === "outside" && (
         <GeofenceBanner distanceMeters={distanceMeters} />
       )}
