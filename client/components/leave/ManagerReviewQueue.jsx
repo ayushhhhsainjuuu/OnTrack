@@ -34,7 +34,7 @@ function EmployeeAvatar({ name }) {
     .toUpperCase();
 
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
       {initials}
     </div>
   );
@@ -83,15 +83,14 @@ export default function ManagerReviewQueue({
 
   return (
     <>
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111c2d]">
-        {/* ---- Header: title, pending count, search + status filter ---- */}
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#1E293B]">
         <div className="border-b border-gray-100 px-5 py-5 dark:border-slate-700">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
             <div>
               <div className="flex items-center gap-2">
                 <UserRound
                   size={19}
-                  className="text-blue-600 dark:text-blue-400"
+                  className="text-[#6366F1] dark:text-indigo-400"
                 />
 
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -124,7 +123,7 @@ export default function ManagerReviewQueue({
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search employee..."
-                  className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950 sm:w-60"
+                  className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-indigo-950 sm:w-60"
                 />
               </div>
 
@@ -132,7 +131,7 @@ export default function ManagerReviewQueue({
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-blue-950"
+                className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:focus:ring-indigo-950"
               >
                 <option value="All">All statuses</option>
                 <option value="Pending">Pending</option>

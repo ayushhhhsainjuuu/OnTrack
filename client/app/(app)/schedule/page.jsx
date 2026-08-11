@@ -37,7 +37,7 @@ function getShiftRoleColor(role) {
 
   return LEADERSHIP_ROLES.includes(normalized)
     ? "text-purple-600 dark:text-purple-400"
-    : "text-blue-600 dark:text-blue-400";
+    : "text-[#6366F1] dark:text-indigo-400";
 }
 
 function formatShiftTime(dateValue) {
@@ -78,7 +78,7 @@ const balances = [
     remaining: 12,
     used: 5,
     total: 17,
-    bar: "bg-blue-600",
+    bar: "bg-[#6366F1]",
     pct: 29,
   },
   {
@@ -173,7 +173,7 @@ function mapDbRequestToUi(row) {
 
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]";
+  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]";
 
 function startOfWeek(date) {
   const result = new Date(date);
@@ -1053,11 +1053,11 @@ export default function SchedulePage() {
             the initial /api/leave load to finish.
           */}
           {leaveServiceUp !== true ? (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#111c2d] dark:text-slate-400">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#1E293B] dark:text-slate-400">
               Waiting for the leave service to come online…
             </div>
           ) : !storageReady ? (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#111c2d] dark:text-slate-400">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#1E293B] dark:text-slate-400">
               Loading leave requests…
             </div>
           ) : (
@@ -1083,7 +1083,7 @@ export default function SchedulePage() {
                       onClick={() =>
                         setLeaveFormOpen(true)
                       }
-                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1d4ed8] dark:bg-blue-600 dark:hover:bg-blue-500"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#6366F1] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4F46E5] dark:bg-[#6366F1] dark:hover:bg-[#4F46E5]"
                     >
                       <Plus size={16} />
                       New Request

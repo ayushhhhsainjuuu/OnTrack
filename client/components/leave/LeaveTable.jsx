@@ -163,8 +163,7 @@ export default function LeaveTable({
 
   return (
     <div className="space-y-6">
-      {/* ---- Pending requests section ---- */}
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111c2d]">
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#1E293B]">
         <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
           <div className="flex items-center gap-2">
             <Clock
@@ -212,13 +211,12 @@ export default function LeaveTable({
         )}
       </section>
 
-      {/* ---- Leave history section ---- */}
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#111c2d]">
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#1E293B]">
         <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
           <div className="flex items-center gap-2">
             <History
               size={18}
-              className="text-blue-500"
+              className="text-[#6366F1]"
             />
 
             <h2 className="text-base font-bold text-gray-900 dark:text-white">
