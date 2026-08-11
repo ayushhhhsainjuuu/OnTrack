@@ -213,7 +213,7 @@ function parseLocalDate(dateValue) {
 
   const date = new Date(`${dateValue}T00:00:00`);
 
-  if (Number.isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {3
     return null;
   }
 
