@@ -13,6 +13,16 @@ const supabase = createClient(
 
 const PORT = process.env.PORT || 4003;
 
+// List of words to block from leave request reasons
+const bannedWords = ["kill", "bitch", "fuck", "shit", "asshole", "bastard"];
+
+// Checks if a given text contains any banned/inappropriate words
+function containsProfanity(text) {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  return bannedWords.some((word) => lowerText.includes(word));
+}
+
 app.get("/health", (req, res) =>
   res.json({ status: "ok", service: "leave" })
 );
@@ -35,6 +45,13 @@ app.post("/leave", async (req, res) => {
   if (!user_id || !leave_type || !start_date || !end_date || !reason) {
     return res.status(400).json({
       error: "user_id, leave_type, start_date, end_date, and reason are required.",
+    });
+  }
+
+  // Block leave requests with inappropriate language in the reason
+  if (containsProfanity(reason)) {
+    return res.status(400).json({
+      error: "Your reason contains inappropriate language. Please revise it.",
     });
   }
 

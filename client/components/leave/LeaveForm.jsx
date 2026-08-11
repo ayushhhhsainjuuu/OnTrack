@@ -16,6 +16,15 @@ const initialForm = {
   reason: "",
 };
 
+// List of words to block from the leave reason field
+const bannedWords = ["kill", "bitch", "fuck", "shit", "asshole", "bastard"];
+
+// Checks if the given text contains any banned/inappropriate words
+function containsProfanity(text) {
+  if (!text) return false;
+  return bannedWords.some((word) => text.toLowerCase().includes(word));
+}
+
 // Count total leave days between two dates (inclusive of both)
 function calculateDays(startDate, endDate) {
   if (!startDate || !endDate) {
@@ -140,6 +149,14 @@ export default function LeaveForm({
     if (form.reason.trim().length < 5) {
       setError(
         "Please provide a little more detail in the reason."
+      );
+      return;
+    }
+
+    // Block inappropriate language in the reason
+    if (containsProfanity(form.reason)) {
+      setError(
+        "Please remove inappropriate language from your reason."
       );
       return;
     }
