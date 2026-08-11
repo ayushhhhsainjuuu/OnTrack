@@ -1,20 +1,16 @@
 "use client";
 
-import {
-  Clock3,
-  MapPin,
-  MoreHorizontal,
-} from "lucide-react";
+import { Clock3, MapPin } from "lucide-react";
 
 const statusStyles = {
-  "On Time":
+  Completed:
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
 
-  Late:
-    "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
+  "In Progress":
+    "bg-blue-100 text-blue-700 dark:bg-indigo-950/50 dark:text-indigo-300",
 
-  Absent:
-    "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
+  "Outside Geofence":
+    "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
 };
 
 function Initials({ name }) {
@@ -26,7 +22,7 @@ function Initials({ name }) {
     .toUpperCase();
 
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
       {initials}
     </div>
   );
@@ -34,14 +30,14 @@ function Initials({ name }) {
 
 export default function ClockTable({ records = [] }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
       <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
         <h2 className="text-base font-bold text-gray-900 dark:text-white">
           Employee Clock Records
         </h2>
 
         <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-          Daily clock-in, clock-out, break, and worked-hour records.
+          Clock-in, clock-out, and worked-hour records from the last 30 days.
         </p>
       </div>
 
@@ -62,7 +58,7 @@ export default function ClockTable({ records = [] }) {
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[950px] text-left">
+          <table className="w-full min-w-[850px] text-left">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/60">
                 {[
@@ -70,10 +66,8 @@ export default function ClockTable({ records = [] }) {
                   "Date",
                   "Clock In",
                   "Clock Out",
-                  "Break",
                   "Total",
                   "Status",
-                  "",
                 ].map((heading) => (
                   <th
                     key={heading}
@@ -120,12 +114,10 @@ export default function ClockTable({ records = [] }) {
                     {record.clockOut}
                   </td>
 
-                  <td className="px-5 py-4 text-sm text-gray-600 dark:text-slate-300">
-                    {record.breakTime}
-                  </td>
-
                   <td className="px-5 py-4 text-sm font-semibold text-gray-900 dark:text-white">
-                    {record.totalHours.toFixed(2)}h
+                    {record.totalHours == null
+                      ? "—"
+                      : `${record.totalHours.toFixed(2)}h`}
                   </td>
 
                   <td className="px-5 py-4">
@@ -136,16 +128,6 @@ export default function ClockTable({ records = [] }) {
                     >
                       {record.status}
                     </span>
-                  </td>
-
-                  <td className="px-5 py-4 text-right">
-                    <button
-                      type="button"
-                      className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
-                      aria-label={`View ${record.employee} clock record`}
-                    >
-                      <MoreHorizontal size={18} />
-                    </button>
                   </td>
                 </tr>
               ))}

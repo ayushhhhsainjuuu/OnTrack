@@ -1,24 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  Check,
-  CheckCircle2,
-  Eye,
-  FileClock,
-  RotateCcw,
-} from "lucide-react";
-
-const statusStyles = {
-  Approved:
-    "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
-
-  Pending:
-    "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-
-  "Needs Review":
-    "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
-};
+import { FileClock } from "lucide-react";
 
 function Initials({ name }) {
   const initials = name
@@ -35,36 +17,17 @@ function Initials({ name }) {
   );
 }
 
-export default function TimesheetTable({
-  initialTimesheets = [],
-}) {
-  const [timesheets, setTimesheets] = useState(
-    initialTimesheets
-  );
-
-  useEffect(() => {
-    setTimesheets(initialTimesheets);
-  }, [initialTimesheets]);
-
-  const updateStatus = (timesheetId, status) => {
-    setTimesheets((currentTimesheets) =>
-      currentTimesheets.map((timesheet) =>
-        timesheet.id === timesheetId
-          ? { ...timesheet, status }
-          : timesheet
-      )
-    );
-  };
-
+export default function TimesheetTable({ timesheets = [] }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
       <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
         <h2 className="text-base font-bold text-gray-900 dark:text-white">
           Employee Timesheets
         </h2>
 
         <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-          Review regular hours, overtime, totals, and approval status.
+          Regular vs. overtime hours (over 40h/week), computed from real clock
+          records for the current pay period.
         </p>
       </div>
 
@@ -80,12 +43,12 @@ export default function TimesheetTable({
           </p>
 
           <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
-            Try changing your search or status filter.
+            No completed shifts yet this pay period, or try changing your search.
           </p>
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[950px] text-left">
+          <table className="w-full min-w-[700px] text-left">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/60">
                 {[
@@ -94,8 +57,6 @@ export default function TimesheetTable({
                   "Regular Hours",
                   "Overtime",
                   "Total Hours",
-                  "Status",
-                  "Actions",
                 ].map((heading) => (
                   <th
                     key={heading}
@@ -143,58 +104,6 @@ export default function TimesheetTable({
 
                   <td className="px-5 py-4 text-sm font-bold text-gray-900 dark:text-white">
                     {timesheet.totalHours.toFixed(1)}h
-                  </td>
-
-                  <td className="px-5 py-4">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                        statusStyles[timesheet.status] || ""
-                      }`}
-                    >
-                      {timesheet.status}
-                    </span>
-                  </td>
-
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
-                      >
-                        <Eye size={13} />
-                        View
-                      </button>
-
-                      {timesheet.status !== "Approved" ? (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateStatus(
-                              timesheet.id,
-                              "Approved"
-                            )
-                          }
-                          className="inline-flex items-center gap-1 rounded-lg bg-emerald-600 px-2.5 py-1.5 text-xs font-semibold text-white transition hover:bg-emerald-700"
-                        >
-                          <Check size={13} />
-                          Approve
-                        </button>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            updateStatus(
-                              timesheet.id,
-                              "Pending"
-                            )
-                          }
-                          className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
-                        >
-                          <RotateCcw size={13} />
-                          Reopen
-                        </button>
-                      )}
-                    </div>
                   </td>
                 </tr>
               ))}
