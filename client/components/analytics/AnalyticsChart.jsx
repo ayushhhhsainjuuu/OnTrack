@@ -1,181 +1,359 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// Same client-side Supabase instance you used in AIQueryBox — adjust path if needed.
-import { supabase } from "@/lib/supabase";
 import {
-  BarChart, Bar, LineChart, Line,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  CheckCircle2,
+  XCircle,
+  Umbrella,
+  ClipboardCheck,
+  AlertTriangle,
+} from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
+import { supabase } from "@/lib/supabase";
+import useTheme from "@/hooks/useTheme";
 
-// EDIT THESE to match your schema (same values as AIQueryBox).
+// Table/column names this page reads directly via Supabase (same pattern
+// CreateScheduleForm and the dashboards use for tables with no dedicated
+// backend service in front of them).
 const TABLES = {
-  shifts: "schedules",     // scheduled shifts — status is draft/published/cancelled, no completed/missed
-  clock: "clock_records",  // actual clock in/out events, matched against schedules below
+  shifts: "schedules",
+  clock: "clock_records",
   leave: "leave_requests",
   tasks: "tasks",
 };
+
 const COLUMNS = {
-  shiftDate: "start_time",     // schedules
-  leaveDate: "created_at",     // leave_requests
-  taskDate: "created_at",      // tasks
-  taskStatus: "status",        // tasks.status is pending | in_progress | done
-  clockInDate: "clock_in_at",  // clock_records
-  clockOutCol: "clock_out_at", // null = never clocked out
+  shiftDate: "start_time",
+  leaveDate: "created_at",
+  taskDate: "created_at",
+  taskStatus: "status",
+  clockInDate: "clock_in_at",
 };
-const WEEKS = 6; // how many weeks the trend line covers
+
+const WEEKS = 6;
 
 // How much slack (in hours) around a shift's start/end time still counts as
-// "clocking in for that shift" — covers people clocking in a bit early/late.
+// "clocking in for that shift" - covers people clocking in a bit early/late.
 const MATCH_BUFFER_HOURS = 2;
 
-// simple row count with optional equality filter, for leave/tasks
 function countBetween(table, dateCol, startISO, endISO, filterCol, filterVal) {
-  let q = supabase
+  let query = supabase
     .from(table)
     .select("*", { count: "exact", head: true })
     .gte(dateCol, startISO)
     .lt(dateCol, endISO);
-  if (filterCol) q = q.eq(filterCol, filterVal);
-  return q;
+
+  if (filterCol) query = query.eq(filterCol, filterVal);
+
+  return query;
 }
 
-// Does this clock_records row belong to this schedule?
-// Same user, and clocked in within [start_time - buffer, end_time + buffer].
+// Does this clock_records row belong to this schedule? Same user, and
+// clocked in within [start_time - buffer, end_time + buffer].
 function isMatch(clockRecord, schedule) {
   if (clockRecord.user_id !== schedule.user_id) return false;
+
   const bufferMs = MATCH_BUFFER_HOURS * 60 * 60 * 1000;
   const clockIn = new Date(clockRecord.clock_in_at).getTime();
   const shiftStart = new Date(schedule.start_time).getTime() - bufferMs;
   const shiftEnd = new Date(schedule.end_time).getTime() + bufferMs;
+
   return clockIn >= shiftStart && clockIn <= shiftEnd;
 }
 
 // For a given [start, end) window, fetch ended shifts + clock_records and
-// return { completed, missed } counts by matching them up.
+// match them up into completed vs missed counts.
 async function completedVsMissed(startISO, endISO) {
   const nowISO = new Date().toISOString();
-  const windowEnd = endISO < nowISO ? endISO : nowISO; // don't judge shifts that haven't ended yet
+  const windowEnd = endISO < nowISO ? endISO : nowISO;
 
-  const pastSchedulesQ = supabase
+  const pastSchedulesQuery = supabase
     .from(TABLES.shifts)
     .select("id,user_id,start_time,end_time")
     .gte(COLUMNS.shiftDate, startISO)
     .lt(COLUMNS.shiftDate, endISO)
     .lt("end_time", windowEnd);
 
-  const clockRecordsQ = supabase
+  const clockRecordsQuery = supabase
     .from(TABLES.clock)
     .select("user_id,clock_in_at,clock_out_at")
     .gte(COLUMNS.clockInDate, startISO)
     .lt(COLUMNS.clockInDate, endISO);
 
-  const [pastSchedules, clockRecords] = await Promise.all([pastSchedulesQ, clockRecordsQ]);
+  const [pastSchedules, clockRecords] = await Promise.all([
+    pastSchedulesQuery,
+    clockRecordsQuery,
+  ]);
 
-  const failed = [pastSchedules, clockRecords].find((r) => r.error);
+  const failed = [pastSchedules, clockRecords].find((result) => result.error);
   if (failed?.error) throw new Error(failed.error.message);
 
   let completed = 0;
   let missed = 0;
+
   for (const schedule of pastSchedules.data ?? []) {
     const clockedOut = (clockRecords.data ?? []).some(
-      (cr) => isMatch(cr, schedule) && cr.clock_out_at
+      (record) => isMatch(record, schedule) && record.clock_out_at
     );
+
     if (clockedOut) completed++;
     else missed++;
   }
+
   return { completed, missed };
 }
 
 function weekBoundaries(weeksAgo) {
   const end = new Date();
   end.setDate(end.getDate() - 7 * weeksAgo);
+
   const start = new Date(end);
   start.setDate(start.getDate() - 7);
+
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
+function StatCard({ label, value, icon: Icon, accent }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
+      <div className="flex items-start justify-between">
+        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
+          {label}
+        </p>
+        <Icon size={18} className={accent} />
+      </div>
+
+      <p className={`mt-2 text-3xl font-bold ${accent}`}>{value}</p>
+    </div>
+  );
+}
+
+function StatCardSkeleton() {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#1E293B]">
+      <div className="h-3 w-20 animate-pulse rounded bg-gray-100 dark:bg-slate-700" />
+      <div className="mt-3 h-8 w-12 animate-pulse rounded bg-gray-100 dark:bg-slate-700" />
+    </div>
+  );
+}
+
+function ChartCard({ title, children }) {
+  return (
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
+      <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+        {title}
+      </h3>
+      {children}
+    </div>
+  );
+}
+
+const BAR_COLORS = {
+  Completed: "#10B981",
+  Missed: "#F43F5E",
+  Leave: "#F59E0B",
+  Tasks: "#6366F1",
+};
+
 export default function AnalyticsChart() {
+  const { isDark } = useTheme();
+
   const [barData, setBarData] = useState([]);
   const [lineData, setLineData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
     (async () => {
       try {
-        // ---- Bar: this week's snapshot ----
         const { start, end } = weekBoundaries(0);
-        const [shiftStats, leave, tasks] = await Promise.all([
+
+        const [thisWeek, leave, tasks, trend] = await Promise.all([
           completedVsMissed(start, end),
           countBetween(TABLES.leave, COLUMNS.leaveDate, start, end),
-          countBetween(TABLES.tasks, COLUMNS.taskDate, start, end, COLUMNS.taskStatus, "done"),
+          countBetween(
+            TABLES.tasks,
+            COLUMNS.taskDate,
+            start,
+            end,
+            COLUMNS.taskStatus,
+            "done"
+          ),
+          Promise.all(
+            Array.from({ length: WEEKS }, (_, index) => WEEKS - 1 - index).map(
+              async (weeksAgo) => {
+                const bounds = weekBoundaries(weeksAgo);
+                const stats = await completedVsMissed(bounds.start, bounds.end);
+
+                return {
+                  week: weeksAgo === 0 ? "This wk" : `${weeksAgo}w ago`,
+                  completed: stats.completed,
+                  missed: stats.missed,
+                };
+              }
+            )
+          ),
         ]);
+
         if (leave.error) throw new Error(leave.error.message);
         if (tasks.error) throw new Error(tasks.error.message);
 
+        if (cancelled) return;
+
         setBarData([
-          { name: "Completed", value: shiftStats.completed },
-          { name: "Missed", value: shiftStats.missed },
+          { name: "Completed", value: thisWeek.completed },
+          { name: "Missed", value: thisWeek.missed },
           { name: "Leave", value: leave.count ?? 0 },
           { name: "Tasks", value: tasks.count ?? 0 },
         ]);
 
-        // ---- Line: completed vs missed shifts over the last WEEKS weeks ----
-        const weekResults = [];
-        for (let i = WEEKS - 1; i >= 0; i--) {
-          const b = weekBoundaries(i);
-          const stats = await completedVsMissed(b.start, b.end);
-          weekResults.push({
-            week: i === 0 ? "This wk" : `${i}w ago`,
-            completed: stats.completed,
-            missed: stats.missed,
-          });
-        }
-        setLineData(weekResults);
-      } catch (e) {
-        setError(e.message);
+        setLineData(trend);
+      } catch (caughtError) {
+        if (!cancelled) setError(caughtError.message);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
-  if (loading) return <p style={{ color: "#94a3b8", fontSize: 14 }}>Loading charts…</p>;
-  if (error) return <p style={{ color: "#dc2626", fontSize: 14 }}>{error}</p>;
+  const gridColor = isDark ? "#334155" : "#e5e7eb";
+  const axisColor = isDark ? "#94a3b8" : "#6b7280";
+  const tooltipBackground = isDark ? "#1E293B" : "#ffffff";
+  const tooltipBorder = isDark ? "#334155" : "#e5e7eb";
+  const tooltipText = isDark ? "#f8fafc" : "#111827";
+
+  const stats = barData.reduce((acc, item) => {
+    acc[item.name] = item.value;
+    return acc;
+  }, {});
+
+  if (error) {
+    return (
+      <div className="flex items-start gap-3 rounded-2xl border border-rose-300 bg-rose-50 p-4 dark:border-rose-900 dark:bg-rose-950/30">
+        <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600 dark:text-rose-400" />
+        <div>
+          <p className="text-sm font-semibold text-rose-700 dark:text-rose-300">
+            Couldn't load analytics
+          </p>
+          <p className="mt-0.5 text-xs text-rose-600 dark:text-rose-400">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ display: "grid", gap: 24, maxWidth: 720 }}>
-      <div style={box}>
-        <h3 style={heading}>This Week</h3>
-        <ResponsiveContainer width="100%" height={260}>
-          <BarChart data={barData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Bar dataKey="value" fill="#334155" radius={[6, 6, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {loading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard
+              label="Completed"
+              value={stats.Completed ?? 0}
+              icon={CheckCircle2}
+              accent="text-emerald-600 dark:text-emerald-400"
+            />
+            <StatCard
+              label="Missed"
+              value={stats.Missed ?? 0}
+              icon={XCircle}
+              accent="text-rose-600 dark:text-rose-400"
+            />
+            <StatCard
+              label="Leave Requests"
+              value={stats.Leave ?? 0}
+              icon={Umbrella}
+              accent="text-amber-600 dark:text-amber-400"
+            />
+            <StatCard
+              label="Tasks Completed"
+              value={stats.Tasks ?? 0}
+              icon={ClipboardCheck}
+              accent="text-[#6366F1] dark:text-indigo-400"
+            />
+          </>
+        )}
       </div>
 
-      <div style={box}>
-        <h3 style={heading}>Shifts Trend ({WEEKS} weeks)</h3>
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={lineData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis dataKey="week" tick={{ fontSize: 12 }} />
-            <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="completed" stroke="#16a34a" strokeWidth={2} />
-            <Line type="monotone" dataKey="missed" stroke="#dc2626" strokeWidth={2} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+      <ChartCard title="This Week">
+        {loading ? (
+          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-800" />
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={barData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: axisColor }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: axisColor }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: tooltipBackground,
+                  borderColor: tooltipBorder,
+                  borderRadius: 12,
+                  color: tooltipText,
+                }}
+                labelStyle={{ color: tooltipText, fontWeight: 600 }}
+                itemStyle={{ color: tooltipText }}
+              />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {barData.map((entry) => (
+                  <Cell key={entry.name} fill={BAR_COLORS[entry.name]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </ChartCard>
+
+      <ChartCard title={`Shifts Trend (${WEEKS} weeks)`}>
+        {loading ? (
+          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-800" />
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={lineData}>
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+              <XAxis dataKey="week" tick={{ fontSize: 12, fill: axisColor }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: axisColor }} />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: tooltipBackground,
+                  borderColor: tooltipBorder,
+                  borderRadius: 12,
+                  color: tooltipText,
+                }}
+                labelStyle={{ color: tooltipText, fontWeight: 600 }}
+                itemStyle={{ color: tooltipText }}
+              />
+              <Legend wrapperStyle={{ fontSize: 12, color: axisColor }} />
+              <Line type="monotone" dataKey="completed" stroke="#10B981" strokeWidth={2} />
+              <Line type="monotone" dataKey="missed" stroke="#F43F5E" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </ChartCard>
     </div>
   );
 }
-
-const box = { border: "1px solid #e2e8f0", borderRadius: 12, padding: 20, background: "#fff" };
-const heading = { fontSize: 15, fontWeight: 600, color: "#1e293b", margin: "0 0 12px" };
