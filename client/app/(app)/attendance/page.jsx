@@ -8,7 +8,7 @@ import {
   Search,
   Users,
 } from "lucide-react";
-import ClockTable from "@/components/attendance/ClockTable";
+import ClockTable from "@/client/components/attendance/ClockTable";
 import TimesheetTable from "@/components/attendance/TimesheetTable";
 
 const clockRecords = [
