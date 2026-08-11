@@ -1,131 +1,84 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CalendarDays,
   Clock3,
-  FileClock,
   Search,
+  UserCheck,
   Users,
 } from "lucide-react";
+import useAuth from "@/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 import ClockTable from "@/components/attendance/ClockTable";
 import TimesheetTable from "@/components/attendance/TimesheetTable";
 
-const clockRecords = [
-  {
-    id: 1,
-    employee: "Maria Lopez",
-    role: "Cleaner",
-    site: "Tower A",
-    date: "Jul 21, 2026",
-    clockIn: "8:02 AM",
-    clockOut: "4:05 PM",
-    breakTime: "30 min",
-    totalHours: 7.55,
-    status: "On Time",
-  },
-  {
-    id: 2,
-    employee: "Henry Tran",
-    role: "Foreman",
-    site: "Tower B",
-    date: "Jul 21, 2026",
-    clockIn: "7:45 AM",
-    clockOut: "4:10 PM",
-    breakTime: "30 min",
-    totalHours: 7.92,
-    status: "On Time",
-  },
-  {
-    id: 3,
-    employee: "Sara Ali",
-    role: "Cleaner",
-    site: "Plaza",
-    date: "Jul 21, 2026",
-    clockIn: "8:18 AM",
-    clockOut: "4:02 PM",
-    breakTime: "30 min",
-    totalHours: 7.23,
-    status: "Late",
-  },
-  {
-    id: 4,
-    employee: "Dev Patel",
-    role: "Lead",
-    site: "Tower A",
-    date: "Jul 20, 2026",
-    clockIn: "9:00 AM",
-    clockOut: "5:30 PM",
-    breakTime: "30 min",
-    totalHours: 8,
-    status: "On Time",
-  },
-  {
-    id: 5,
-    employee: "Anita Rao",
-    role: "Cleaner",
-    site: "Tower B",
-    date: "Jul 20, 2026",
-    clockIn: "—",
-    clockOut: "—",
-    breakTime: "—",
-    totalHours: 0,
-    status: "Absent",
-  },
-];
+// Same role hierarchy as CreateScheduleForm/AdminDashboard, but scoped to
+// every role the app recognizes rather than just the 3 schedulable roles -
+// attendance visibility isn't limited to who can be scheduled.
+const ROLE_RANK = {
+  Owner: 4,
+  "General Manager (GM)": 4,
+  "Project Manager": 3,
+  "Accountant Supervisor": 0,
+  Foreman: 2,
+  Lead: 2,
+  Cleaner: 1,
+};
 
-const timesheets = [
-  {
-    id: 1,
-    employee: "Maria Lopez",
-    role: "Cleaner",
-    period: "Jul 14 – Jul 20",
-    regularHours: 38,
-    overtimeHours: 2.5,
-    totalHours: 40.5,
-    status: "Pending",
-  },
-  {
-    id: 2,
-    employee: "Henry Tran",
-    role: "Foreman",
-    period: "Jul 14 – Jul 20",
-    regularHours: 40,
-    overtimeHours: 4,
-    totalHours: 44,
-    status: "Approved",
-  },
-  {
-    id: 3,
-    employee: "Sara Ali",
-    role: "Cleaner",
-    period: "Jul 14 – Jul 20",
-    regularHours: 32,
-    overtimeHours: 0,
-    totalHours: 32,
-    status: "Pending",
-  },
-  {
-    id: 4,
-    employee: "Dev Patel",
-    role: "Lead",
-    period: "Jul 14 – Jul 20",
-    regularHours: 40,
-    overtimeHours: 1,
-    totalHours: 41,
-    status: "Approved",
-  },
-  {
-    id: 5,
-    employee: "Anita Rao",
-    role: "Cleaner",
-    period: "Jul 14 – Jul 20",
-    regularHours: 35,
-    overtimeHours: 0,
-    totalHours: 35,
-    status: "Needs Review",
-  },
-];
+const ALL_ROLES = Object.keys(ROLE_RANK);
+const OVERTIME_THRESHOLD_HOURS = 40;
+const RECORD_WINDOW_DAYS = 30;
+
+function getRoleRank(role) {
+  return ROLE_RANK[role] || 0;
+}
+
+function getVisibleRoles(viewerRole) {
+  const rank = getRoleRank(viewerRole);
+  return ALL_ROLES.filter((role) => rank > getRoleRank(role));
+}
+
+function startOfWeek(date) {
+  const start = new Date(date);
+  const day = start.getDay();
+  const diffFromMonday = day === 0 ? -6 : 1 - day;
+  start.setDate(start.getDate() + diffFromMonday);
+  start.setHours(0, 0, 0, 0);
+  return start;
+}
+
+function fmtDate(date) {
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+function fmtTime(date) {
+  return date.toLocaleTimeString("en-CA", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function fmtShort(date) {
+  return date.toLocaleDateString("en-CA", { month: "short", day: "numeric" });
+}
+
+async function getAuthHeaders() {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) return null;
+
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${session.access_token}`,
+  };
+}
 
 function SummaryCard({
   label,
@@ -135,16 +88,14 @@ function SummaryCard({
   valueClass = "text-gray-900 dark:text-white",
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
             {label}
           </p>
 
-          <p className={`mt-2 text-3xl font-bold ${valueClass}`}>
-            {value}
-          </p>
+          <p className={`mt-2 text-3xl font-bold ${valueClass}`}>{value}</p>
 
           <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
             {description}
@@ -160,12 +111,156 @@ function SummaryCard({
 }
 
 export default function AttendancePage() {
+  const { role, isLoading: authLoading } = useAuth();
+
   const [activeTab, setActiveTab] = useState("clock-records");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
+  const [roster, setRoster] = useState([]);
+  const [rosterLoading, setRosterLoading] = useState(true);
+
+  const [siteNames, setSiteNames] = useState({});
+
+  const [clockRecords, setClockRecords] = useState([]);
+  const [recordsLoading, setRecordsLoading] = useState(true);
+
+  const visibleRoles = useMemo(() => getVisibleRoles(role), [role]);
+
+  // Real roster, same endpoint CreateScheduleForm's employee picker uses.
+  useEffect(() => {
+    if (authLoading) return;
+
+    if (visibleRoles.length === 0) {
+      setRoster([]);
+      setRosterLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const headers = await getAuthHeaders();
+        if (!headers) return;
+
+        const params = new URLSearchParams({
+          resource: "assignable-employees",
+          roles: visibleRoles.join(","),
+        });
+
+        const res = await fetch(`/api/schedule?${params.toString()}`, { headers });
+        if (!res.ok) return;
+
+        const rows = await res.json();
+        if (!cancelled) setRoster(Array.isArray(rows) ? rows : []);
+      } catch {
+        // scheduling service unreachable - roster stays empty
+      } finally {
+        if (!cancelled) setRosterLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authLoading, visibleRoles]);
+
+  // Site names, same open-read pattern CreateScheduleForm uses for accounts.
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      const { data } = await supabase.from("accounts").select("id, name");
+      if (!cancelled) {
+        const map = {};
+        (data || []).forEach((account) => {
+          map[account.id] = account.name;
+        });
+        setSiteNames(map);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // clock_records for the visible roster over the last 30 days - same direct
+  // table read the Analytics page uses (clock_records has an open read
+  // policy; writes stay locked to the owning employee via clock-services).
+  useEffect(() => {
+    if (rosterLoading) return;
+
+    if (roster.length === 0) {
+      setClockRecords([]);
+      setRecordsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      setRecordsLoading(true);
+
+      const since = new Date();
+      since.setDate(since.getDate() - RECORD_WINDOW_DAYS);
+
+      const { data, error } = await supabase
+        .from("clock_records")
+        .select("id, user_id, account_id, clock_in_at, clock_out_at, outside_geofence")
+        .in("user_id", roster.map((member) => member.id))
+        .gte("clock_in_at", since.toISOString())
+        .order("clock_in_at", { ascending: false })
+        .limit(300);
+
+      if (!cancelled) {
+        if (!error) setClockRecords(data || []);
+        setRecordsLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [rosterLoading, roster]);
+
+  const rosterById = useMemo(() => {
+    const map = {};
+    roster.forEach((member) => {
+      map[member.id] = member;
+    });
+    return map;
+  }, [roster]);
+
+  const clockRows = useMemo(
+    () =>
+      clockRecords.map((record) => {
+        const employee = rosterById[record.user_id];
+        const start = new Date(record.clock_in_at);
+        const end = record.clock_out_at ? new Date(record.clock_out_at) : null;
+
+        let status = "In Progress";
+        if (end) status = record.outside_geofence ? "Outside Geofence" : "Completed";
+
+        return {
+          id: record.id,
+          userId: record.user_id,
+          employee: employee?.full_name || "Unknown",
+          role: employee?.role || "—",
+          site: siteNames[record.account_id] || "Unassigned",
+          date: fmtDate(start),
+          clockIn: fmtTime(start),
+          clockOut: end ? fmtTime(end) : "—",
+          totalHours: end ? (end - start) / 3600000 : null,
+          status,
+        };
+      }),
+    [clockRecords, rosterById, siteNames]
+  );
+
   const filteredClockRecords = useMemo(() => {
-    return clockRecords.filter((record) => {
+    return clockRows.filter((record) => {
       const searchValue = search.toLowerCase();
 
       const matchesSearch =
@@ -174,37 +269,70 @@ export default function AttendancePage() {
         record.site.toLowerCase().includes(searchValue);
 
       const matchesStatus =
-        statusFilter === "All" ||
-        record.status === statusFilter;
+        statusFilter === "All" || record.status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
-  }, [search, statusFilter]);
+  }, [clockRows, search, statusFilter]);
+
+  const weekStart = useMemo(() => startOfWeek(new Date()), []);
+  const periodLabel = useMemo(() => {
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    return `${fmtShort(weekStart)} – ${fmtShort(weekEnd)}`;
+  }, [weekStart]);
+
+  const timesheets = useMemo(() => {
+    const totals = {};
+
+    clockRecords.forEach((record) => {
+      if (!record.clock_out_at) return;
+
+      const start = new Date(record.clock_in_at);
+      if (start < weekStart) return;
+
+      const hours = (new Date(record.clock_out_at) - start) / 3600000;
+      totals[record.user_id] = (totals[record.user_id] || 0) + hours;
+    });
+
+    return roster
+      .filter((member) => totals[member.id] > 0)
+      .map((member) => {
+        const total = totals[member.id];
+
+        return {
+          id: member.id,
+          employee: member.full_name,
+          role: member.role,
+          period: periodLabel,
+          regularHours: Math.min(total, OVERTIME_THRESHOLD_HOURS),
+          overtimeHours: Math.max(0, total - OVERTIME_THRESHOLD_HOURS),
+          totalHours: total,
+        };
+      })
+      .sort((a, b) => b.totalHours - a.totalHours);
+  }, [clockRecords, roster, weekStart, periodLabel]);
 
   const filteredTimesheets = useMemo(() => {
-    return timesheets.filter((timesheet) => {
-      const searchValue = search.toLowerCase();
+    const searchValue = search.toLowerCase();
 
-      const matchesSearch =
+    return timesheets.filter(
+      (timesheet) =>
         timesheet.employee.toLowerCase().includes(searchValue) ||
-        timesheet.role.toLowerCase().includes(searchValue);
+        timesheet.role.toLowerCase().includes(searchValue)
+    );
+  }, [timesheets, search]);
 
-      const matchesStatus =
-        statusFilter === "All" ||
-        timesheet.status === statusFilter;
-
-      return matchesSearch && matchesStatus;
-    });
-  }, [search, statusFilter]);
-
-  const pendingTimesheets = timesheets.filter(
-    (timesheet) => timesheet.status === "Pending"
-  ).length;
-
-  const totalHours = timesheets.reduce(
+  const totalHoursThisWeek = timesheets.reduce(
     (total, timesheet) => total + timesheet.totalHours,
     0
   );
+
+  const clockedInNow = clockRows.filter(
+    (record) => record.status === "In Progress"
+  ).length;
+
+  const loading = rosterLoading || recordsLoading;
 
   return (
     <div className="space-y-6">
@@ -218,37 +346,37 @@ export default function AttendancePage() {
         </h1>
 
         <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
-          Review employee clock records and weekly timesheets.
+          Review employee clock records and weekly hours.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
           label="Employees"
-          value={timesheets.length}
-          description="included in this pay period"
+          value={rosterLoading ? "…" : roster.length}
+          description="visible to your role"
           icon={Users}
         />
 
         <SummaryCard
           label="Total Hours"
-          value={`${totalHours.toFixed(1)}h`}
-          description="across all employees"
+          value={loading ? "…" : `${totalHoursThisWeek.toFixed(1)}h`}
+          description="this pay period"
           icon={Clock3}
-          valueClass="text-blue-600 dark:text-blue-400"
+          valueClass="text-[#6366F1] dark:text-indigo-400"
         />
 
         <SummaryCard
-          label="Pending Approval"
-          value={pendingTimesheets}
-          description="timesheets need review"
-          icon={FileClock}
-          valueClass="text-amber-600 dark:text-amber-400"
+          label="Clocked In Now"
+          value={loading ? "…" : clockedInNow}
+          description="active shifts right now"
+          icon={UserCheck}
+          valueClass="text-emerald-600 dark:text-emerald-400"
         />
 
         <SummaryCard
           label="Pay Period"
-          value="Jul 14–20"
+          value={periodLabel}
           description="current reporting period"
           icon={CalendarDays}
           valueClass="text-purple-600 dark:text-purple-400"
@@ -299,47 +427,39 @@ export default function AttendancePage() {
               type="search"
               placeholder="Search employee..."
               value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
-              className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-[#111c2d] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950 sm:w-64"
+              onChange={(event) => setSearch(event.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-[#1E293B] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-indigo-950 sm:w-64"
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(event.target.value)
-            }
-            className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-slate-700 dark:bg-[#111c2d] dark:text-slate-200 dark:focus:ring-blue-950"
-          >
-            <option value="All">All statuses</option>
-
-            {activeTab === "clock-records" ? (
-              <>
-                <option value="On Time">On Time</option>
-                <option value="Late">Late</option>
-                <option value="Absent">Absent</option>
-              </>
-            ) : (
-              <>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Needs Review">
-                  Needs Review
-                </option>
-              </>
-            )}
-          </select>
+          {activeTab === "clock-records" && (
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-[#1E293B] dark:text-slate-200 dark:focus:ring-indigo-950"
+            >
+              <option value="All">All statuses</option>
+              <option value="Completed">Completed</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Outside Geofence">Outside Geofence</option>
+            </select>
+          )}
         </div>
       </div>
 
-      {activeTab === "clock-records" ? (
+      {loading ? (
+        <div className="space-y-2 rounded-2xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-[#1E293B]">
+          {[0, 1, 2, 3].map((key) => (
+            <div
+              key={key}
+              className="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-slate-800"
+            />
+          ))}
+        </div>
+      ) : activeTab === "clock-records" ? (
         <ClockTable records={filteredClockRecords} />
       ) : (
-        <TimesheetTable
-          initialTimesheets={filteredTimesheets}
-        />
+        <TimesheetTable timesheets={filteredTimesheets} />
       )}
     </div>
   );

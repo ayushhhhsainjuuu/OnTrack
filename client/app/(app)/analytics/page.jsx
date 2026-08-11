@@ -1,11 +1,22 @@
-import AIQueryBox from "@/components/analytics/AIQueryBox";
 import AnalyticsChart from "@/components/analytics/AnalyticsChart";
 
 export default function AnalyticsPage() {
   return (
-    <div style={{ display: "grid", gap: 32, padding: 24 }}>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0f172a" }}>Analytics</h1>
-      <AIQueryBox />
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500">
+          Insights
+        </p>
+
+        <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+          Analytics
+        </h1>
+
+        <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+          Shift completion, leave, and task activity across your workplace.
+        </p>
+      </div>
+
       <AnalyticsChart />
     </div>
   );
