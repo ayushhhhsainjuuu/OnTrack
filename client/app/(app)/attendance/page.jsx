@@ -88,7 +88,7 @@ function SummaryCard({
   valueClass = "text-gray-900 dark:text-white",
 }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:-translate-y-0.5 dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-slate-400">
@@ -102,7 +102,7 @@ function SummaryCard({
           </p>
         </div>
 
-        <div className="rounded-xl bg-gray-100 p-2.5 text-gray-500 dark:bg-slate-700 dark:text-slate-300">
+        <div className="rounded-xl bg-gray-100 p-2.5 text-gray-500 dark:bg-[#1a1a1a] dark:text-slate-300">
           <Icon size={20} />
         </div>
       </div>
@@ -363,7 +363,7 @@ export default function AttendancePage() {
           value={loading ? "…" : `${totalHoursThisWeek.toFixed(1)}h`}
           description="this pay period"
           icon={Clock3}
-          valueClass="text-[#6366F1] dark:text-indigo-400"
+          valueClass="text-blue-600 dark:text-blue-400"
         />
 
         <SummaryCard
@@ -384,7 +384,7 @@ export default function AttendancePage() {
       </div>
 
       <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
-        <div className="inline-flex w-fit rounded-xl bg-gray-100 p-1 dark:bg-slate-800">
+        <div className="inline-flex w-fit rounded-xl bg-gray-100 p-1 dark:bg-[#1a1a1a]">
           <button
             type="button"
             onClick={() => {
@@ -393,7 +393,7 @@ export default function AttendancePage() {
             }}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
               activeTab === "clock-records"
-                ? "bg-white text-gray-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                ? "bg-white text-gray-900 shadow-sm dark:bg-[#262626] dark:text-white"
                 : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
@@ -408,7 +408,7 @@ export default function AttendancePage() {
             }}
             className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
               activeTab === "timesheets"
-                ? "bg-white text-gray-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                ? "bg-white text-gray-900 shadow-sm dark:bg-[#262626] dark:text-white"
                 : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
             }`}
           >
@@ -428,7 +428,7 @@ export default function AttendancePage() {
               placeholder="Search employee..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-[#1E293B] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-indigo-950 sm:w-64"
+              className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950 sm:w-64"
             />
           </div>
 
@@ -436,7 +436,7 @@ export default function AttendancePage() {
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-[#1E293B] dark:text-slate-200 dark:focus:ring-indigo-950"
+              className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-slate-200 dark:focus:ring-blue-950"
             >
               <option value="All">All statuses</option>
               <option value="Completed">Completed</option>
@@ -448,11 +448,11 @@ export default function AttendancePage() {
       </div>
 
       {loading ? (
-        <div className="space-y-2 rounded-2xl border border-gray-200 bg-white p-5 dark:border-slate-700 dark:bg-[#1E293B]">
+        <div className="space-y-2 rounded-2xl border border-gray-200 bg-white p-5 dark:border-[#262626] dark:bg-[#121212]">
           {[0, 1, 2, 3].map((key) => (
             <div
               key={key}
-              className="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-slate-800"
+              className="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-[#1a1a1a]"
             />
           ))}
         </div>

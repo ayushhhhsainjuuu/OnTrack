@@ -6,7 +6,7 @@ import { CheckCircle2, Loader2, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]";
+  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 const initialScheduleForm = {
   employeeId: "",
@@ -316,7 +316,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                 event.target.value
               )
             }
-            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
           >
             <option value="">
               {assignableEmployeesLoading
@@ -353,7 +353,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
             >
               <option value="">
                 {scheduleAccounts.length === 0
@@ -389,7 +389,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
               onChange={(event) =>
                 handleStartDateChange(event.target.value)
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
             />
           </div>
 
@@ -411,7 +411,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
             />
           </div>
         </div>
@@ -436,7 +436,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
             />
 
             <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
@@ -463,7 +463,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
             />
           </div>
         </div>
@@ -488,7 +488,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
               )
             }
             placeholder="Add any details for this shift..."
-            className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-indigo-950"
+            className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950"
           />
         </div>
 
@@ -498,11 +498,11 @@ export default function CreateScheduleForm({ role, onSuccess }) {
           </div>
         )}
 
-        <div className="flex justify-end border-t border-gray-100 pt-5 dark:border-slate-700">
+        <div className="flex justify-end border-t border-gray-100 pt-5 dark:border-[#262626]">
           <button
             type="submit"
             disabled={createScheduleSubmitting}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#6366F1] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#6366F1] dark:hover:bg-[#4F46E5]"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#2563eb] dark:hover:bg-[#1d4ed8]"
           >
             {createScheduleSubmitting ? (
               <>

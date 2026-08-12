@@ -7,7 +7,7 @@ const statusStyles = {
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
 
   "In Progress":
-    "bg-blue-100 text-blue-700 dark:bg-indigo-950/50 dark:text-indigo-300",
+    "bg-blue-100 text-blue-700 dark:bg-blue-950/50 dark:text-blue-300",
 
   "Outside Geofence":
     "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
@@ -22,7 +22,7 @@ function Initials({ name }) {
     .toUpperCase();
 
   return (
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
       {initials}
     </div>
   );
@@ -30,8 +30,8 @@ function Initials({ name }) {
 
 export default function ClockTable({ records = [] }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
-      <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
+      <div className="border-b border-gray-100 px-5 py-4 dark:border-[#262626]">
         <h2 className="text-base font-bold text-gray-900 dark:text-white">
           Employee Clock Records
         </h2>
@@ -60,7 +60,7 @@ export default function ClockTable({ records = [] }) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[850px] text-left">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/60">
+              <tr className="border-b border-gray-200 bg-gray-50 dark:border-[#262626] dark:bg-[#1a1a1a]/60">
                 {[
                   "Employee",
                   "Date",
@@ -79,11 +79,11 @@ export default function ClockTable({ records = [] }) {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-gray-100 dark:divide-[#262626]">
               {records.map((record) => (
                 <tr
                   key={record.id}
-                  className="transition hover:bg-gray-50 dark:hover:bg-slate-800/50"
+                  className="transition hover:bg-gray-50 dark:hover:bg-[#1a1a1a]/50"
                 >
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">

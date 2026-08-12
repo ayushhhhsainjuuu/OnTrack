@@ -127,7 +127,7 @@ function weekBoundaries(weeksAgo) {
 
 function StatCard({ label, value, icon: Icon, accent }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:-translate-y-0.5 dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
       <div className="flex items-start justify-between">
         <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
           {label}
@@ -142,16 +142,16 @@ function StatCard({ label, value, icon: Icon, accent }) {
 
 function StatCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-[#1E293B]">
-      <div className="h-3 w-20 animate-pulse rounded bg-gray-100 dark:bg-slate-700" />
-      <div className="mt-3 h-8 w-12 animate-pulse rounded bg-gray-100 dark:bg-slate-700" />
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-[#262626] dark:bg-[#121212]">
+      <div className="h-3 w-20 animate-pulse rounded bg-gray-100 dark:bg-[#1a1a1a]" />
+      <div className="mt-3 h-8 w-12 animate-pulse rounded bg-gray-100 dark:bg-[#1a1a1a]" />
     </div>
   );
 }
 
 function ChartCard({ title, children }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
       <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
         {title}
       </h3>
@@ -164,7 +164,7 @@ const BAR_COLORS = {
   Completed: "#10B981",
   Missed: "#F43F5E",
   Leave: "#F59E0B",
-  Tasks: "#6366F1",
+  Tasks: "#2563eb",
 };
 
 export default function AnalyticsChart() {
@@ -236,7 +236,7 @@ export default function AnalyticsChart() {
 
   const gridColor = isDark ? "#334155" : "#e5e7eb";
   const axisColor = isDark ? "#94a3b8" : "#6b7280";
-  const tooltipBackground = isDark ? "#1E293B" : "#ffffff";
+  const tooltipBackground = isDark ? "#121212" : "#ffffff";
   const tooltipBorder = isDark ? "#334155" : "#e5e7eb";
   const tooltipText = isDark ? "#f8fafc" : "#111827";
 
@@ -293,7 +293,7 @@ export default function AnalyticsChart() {
               label="Tasks Completed"
               value={stats.Tasks ?? 0}
               icon={ClipboardCheck}
-              accent="text-[#6366F1] dark:text-indigo-400"
+              accent="text-blue-600 dark:text-blue-400"
             />
           </>
         )}
@@ -301,7 +301,7 @@ export default function AnalyticsChart() {
 
       <ChartCard title="This Week">
         {loading ? (
-          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-800" />
+          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-[#1a1a1a]" />
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={barData}>
@@ -330,7 +330,7 @@ export default function AnalyticsChart() {
 
       <ChartCard title={`Shifts Trend (${WEEKS} weeks)`}>
         {loading ? (
-          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-slate-800" />
+          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-[#1a1a1a]" />
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={lineData}>

@@ -235,7 +235,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-gray-900 transition-colors duration-200 dark:bg-[#0F172A] dark:text-[#F8FAFC]">
+    <div className="min-h-screen bg-[#f8fafc] text-gray-900 transition-colors duration-200 dark:bg-black dark:text-slate-100">
       {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[#E2E8F0] bg-white text-gray-900 transition-transform duration-200 dark:border-zinc-800 dark:bg-[#0A0A0A] dark:text-slate-100 md:translate-x-0 ${

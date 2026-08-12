@@ -44,8 +44,8 @@ export default function RejectModal({
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/50 px-4 py-8">
-      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#1E293B]">
-        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5 dark:border-slate-700">
+      <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-[#262626] dark:bg-[#121212]">
+        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5 dark:border-[#262626]">
           <div className="flex items-start gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-950/50 dark:text-red-400">
               <AlertTriangle size={20} />
@@ -65,7 +65,7 @@ export default function RejectModal({
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-white"
+            className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:text-slate-500 dark:hover:bg-[#1a1a1a] dark:hover:text-white"
             aria-label="Close rejection window"
           >
             <X size={18} />
@@ -73,7 +73,7 @@ export default function RejectModal({
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5 p-6">
-          <div className="rounded-xl bg-gray-50 p-4 dark:bg-slate-800">
+          <div className="rounded-xl bg-gray-50 p-4 dark:bg-[#1a1a1a]">
             <p className="text-sm font-semibold text-gray-900 dark:text-white">
               {request.employee}
             </p>
@@ -101,7 +101,7 @@ export default function RejectModal({
                 setError("");
               }}
               placeholder="Explain why this leave request cannot be approved..."
-              className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-red-400 focus:ring-4 focus:ring-red-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-red-950"
+              className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-red-400 focus:ring-4 focus:ring-red-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-red-950"
             />
 
             <p className="mt-1 text-right text-xs text-gray-400 dark:text-slate-500">
@@ -115,11 +115,11 @@ export default function RejectModal({
             </div>
           )}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-slate-700 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-[#262626] sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={handleClose}
-              className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+              className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 dark:border-[#262626] dark:text-slate-300 dark:hover:bg-[#1a1a1a]"
             >
               Go back
             </button>

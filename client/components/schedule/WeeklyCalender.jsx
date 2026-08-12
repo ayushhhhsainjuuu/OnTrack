@@ -46,7 +46,7 @@ function formatMonthHeading(startDate, endDate) {
 }
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]";
+  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:-translate-y-0.5 dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 export default function WeeklyCalender({
   week = [],
@@ -136,7 +136,7 @@ export default function WeeklyCalender({
           <button
             type="button"
             onClick={onPreviousWeek}
-            className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-[#262626] dark:text-slate-300 dark:hover:bg-[#1a1a1a] dark:hover:text-white"
             aria-label="Previous week"
             title="Previous week"
           >
@@ -146,7 +146,7 @@ export default function WeeklyCalender({
           <button
             type="button"
             onClick={onToday}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-[#262626] dark:text-slate-200 dark:hover:bg-[#1a1a1a] dark:hover:text-white"
           >
             Today
           </button>
@@ -154,7 +154,7 @@ export default function WeeklyCalender({
           <button
             type="button"
             onClick={onNextWeek}
-            className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-[#262626] dark:text-slate-300 dark:hover:bg-[#1a1a1a] dark:hover:text-white"
             aria-label="Next week"
             title="Next week"
           >

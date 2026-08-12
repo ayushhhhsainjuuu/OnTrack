@@ -37,7 +37,7 @@ function getShiftRoleColor(role) {
 
   return LEADERSHIP_ROLES.includes(normalized)
     ? "text-purple-600 dark:text-purple-400"
-    : "text-[#6366F1] dark:text-indigo-400";
+    : "text-blue-600 dark:text-blue-400";
 }
 
 function formatShiftTime(dateValue) {
@@ -78,7 +78,7 @@ const balances = [
     remaining: 12,
     used: 5,
     total: 17,
-    bar: "bg-[#6366F1]",
+    bar: "bg-[#2563eb]",
     pct: 29,
   },
   {
@@ -173,7 +173,7 @@ function mapDbRequestToUi(row) {
 
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]";
+  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 function startOfWeek(date) {
   const result = new Date(date);
@@ -937,7 +937,7 @@ export default function SchedulePage() {
         </p>
       </div>
 
-      <div className="inline-flex rounded-xl bg-gray-100 p-1 dark:bg-slate-800">
+      <div className="inline-flex rounded-xl bg-gray-100 p-1 dark:bg-[#1a1a1a]">
         {availableTabs.map(
           (item) => (
             <button
@@ -946,7 +946,7 @@ export default function SchedulePage() {
               onClick={() => setTab(item)}
               className={`rounded-lg px-4 py-1.5 text-sm font-medium transition ${
                 tab === item
-                  ? "bg-white text-gray-900 shadow-sm dark:bg-slate-700 dark:text-white"
+                  ? "bg-white text-gray-900 shadow-sm dark:bg-[#262626] dark:text-white"
                   : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
               }`}
             >
@@ -1029,7 +1029,7 @@ export default function SchedulePage() {
                   days remaining
                 </p>
 
-                <div className="mt-3 h-1.5 w-full rounded-full bg-gray-100 dark:bg-slate-700">
+                <div className="mt-3 h-1.5 w-full rounded-full bg-gray-100 dark:bg-[#1a1a1a]">
                   <div
                     className={`h-full rounded-full ${balance.bar}`}
                     style={{
@@ -1053,11 +1053,11 @@ export default function SchedulePage() {
             the initial /api/leave load to finish.
           */}
           {leaveServiceUp !== true ? (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#1E293B] dark:text-slate-400">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-[#262626] dark:bg-[#121212] dark:text-slate-400">
               Waiting for the leave service to come online…
             </div>
           ) : !storageReady ? (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-slate-700 dark:bg-[#1E293B] dark:text-slate-400">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-[#262626] dark:bg-[#121212] dark:text-slate-400">
               Loading leave requests…
             </div>
           ) : (
@@ -1083,7 +1083,7 @@ export default function SchedulePage() {
                       onClick={() =>
                         setLeaveFormOpen(true)
                       }
-                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#6366F1] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4F46E5] dark:bg-[#6366F1] dark:hover:bg-[#4F46E5]"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] dark:bg-[#2563eb] dark:hover:bg-[#1d4ed8]"
                     >
                       <Plus size={16} />
                       New Request
@@ -1104,7 +1104,7 @@ export default function SchedulePage() {
               {/* Manager review queue: shown to Owner/GM/Foreman so they can
                   approve or reject other people's leave requests. */}
               {canReviewLeaveRequests && (
-                <section className="border-t border-gray-200 pt-6 dark:border-slate-700">
+                <section className="border-t border-gray-200 pt-6 dark:border-[#262626]">
                   <ManagerReviewQueue
                     requests={
                       managerLeaveRequests
