@@ -136,12 +136,12 @@ export default function LoginPage() {
           />
 
           <div className="flex items-center justify-between gap-4">
-            <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-600">
+            <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-slate-600">
               <input
                 type="checkbox"
                 checked={rememberMe}
                 onChange={handleRememberMeChange}
-                className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-[#0A3C86]"
+                className="h-4 w-4 cursor-pointer rounded border-slate-300 accent-brand"
               />
 
               Remember me
@@ -149,7 +149,7 @@ export default function LoginPage() {
 
             <Link
               href="/auth/forgot-password"
-              className="text-sm font-bold text-[#0A3C86] transition hover:text-[#062B63]"
+              className="text-sm font-semibold text-brand transition hover:text-brand-dark"
             >
               Forgot password?
             </Link>
@@ -157,7 +157,7 @@ export default function LoginPage() {
         </div>
 
         {errorMessage && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
             {errorMessage}
           </div>
         )}
@@ -165,7 +165,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full rounded-2xl bg-[#062B63] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-950/20 transition hover:-translate-y-0.5 hover:bg-[#0A3C86] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
+          className="w-full rounded-2xl bg-brand-dark px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/20 transition hover:-translate-y-0.5 hover:bg-brand hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-100 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:translate-y-0"
         >
           {isLoading ? "Signing in..." : "Sign in"}
         </button>

@@ -124,14 +124,14 @@ export default function LeaveForm({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-8">
-      <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-[#262626] dark:bg-[#121212]">
-        <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5 dark:border-slate-700">
+      <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-2xl border border-border bg-card shadow-2xl">
+        <div className="flex items-start justify-between border-b border-border px-6 py-5">
           <div>
-            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-foreground">
               Request leave
             </h2>
 
-            <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Submit a new leave request for manager
               review.
             </p>
@@ -140,7 +140,7 @@ export default function LeaveForm({
           <button
             type="button"
             onClick={handleClose}
-            className="rounded-lg p-2 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:text-slate-500 dark:hover:bg-slate-700 dark:hover:text-slate-200"
+            className="rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
             aria-label="Close leave request form"
           >
             <X size={19} />
@@ -154,7 +154,7 @@ export default function LeaveForm({
           <div>
             <label
               htmlFor="leave-type"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               Leave type
             </label>
@@ -165,7 +165,7 @@ export default function LeaveForm({
               onChange={(event) =>
                 updateField("type", event.target.value)
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
             >
               <option value="Annual Leave">
                 Annual Leave
@@ -189,7 +189,7 @@ export default function LeaveForm({
             <div>
               <label
                 htmlFor="leave-start-date"
-                className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+                className="text-sm font-semibold text-foreground"
               >
                 Start date
               </label>
@@ -204,14 +204,14 @@ export default function LeaveForm({
                     event.target.value
                   )
                 }
-                className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+                className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
               />
             </div>
 
             <div>
               <label
                 htmlFor="leave-end-date"
-                className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+                className="text-sm font-semibold text-foreground"
               >
                 End date
               </label>
@@ -227,7 +227,7 @@ export default function LeaveForm({
                     event.target.value
                   )
                 }
-                className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+                className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
               />
             </div>
           </div>
@@ -244,7 +244,7 @@ export default function LeaveForm({
           <div>
             <label
               htmlFor="leave-reason"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               Reason
             </label>
@@ -258,25 +258,25 @@ export default function LeaveForm({
                 updateField("reason", event.target.value)
               }
               placeholder="Briefly explain the reason for your leave request..."
-              className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950"
+              className="mt-2 w-full resize-none rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
             />
 
-            <p className="mt-1 text-right text-xs text-gray-400 dark:text-slate-500">
+            <p className="mt-1 text-right text-xs text-muted-foreground">
               {form.reason.length}/300
             </p>
           </div>
 
           {error && (
-            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
               {error}
             </div>
           )}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-gray-100 pt-5 dark:border-slate-700 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-border pt-5 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={handleClose}
-              className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 dark:border-slate-600 dark:text-slate-300 dark:hover:bg-slate-700"
+              className="rounded-xl border border-border px-5 py-2.5 text-sm font-semibold text-muted-foreground transition hover:bg-muted"
             >
               Cancel
             </button>
@@ -284,7 +284,7 @@ export default function LeaveForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
             >
               {isSubmitting ? (
                 <>

@@ -6,7 +6,7 @@ import { CheckCircle2, Loader2, Plus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
+  "rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 const initialScheduleForm = {
   employeeId: "",
@@ -284,11 +284,11 @@ export default function CreateScheduleForm({ role, onSuccess }) {
 
   return (
     <div className={`${cardClass} p-6`}>
-      <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+      <h2 className="text-lg font-semibold text-foreground">
         Create schedule
       </h2>
 
-      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+      <p className="mt-1 text-xs text-muted-foreground">
         Assign a shift to an employee you manage.
         {" "}As {role}, you can schedule:{" "}
         {assignableRoles.join(", ") || "no roles"}.
@@ -302,7 +302,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
           <div>
             <label
               htmlFor="create-schedule-employee"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               Employee
             </label>
@@ -316,7 +316,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                 event.target.value
               )
             }
-            className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+            className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
           >
             <option value="">
               {assignableEmployeesLoading
@@ -339,7 +339,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
           <div>
             <label
               htmlFor="create-schedule-account"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               Site
             </label>
@@ -353,7 +353,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
             >
               <option value="">
                 {scheduleAccounts.length === 0
@@ -377,7 +377,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
           <div>
             <label
               htmlFor="create-schedule-date"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               Start date
             </label>
@@ -389,14 +389,14 @@ export default function CreateScheduleForm({ role, onSuccess }) {
               onChange={(event) =>
                 handleStartDateChange(event.target.value)
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
             />
           </div>
 
           <div>
             <label
               htmlFor="create-schedule-start"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               Start time
             </label>
@@ -411,7 +411,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
             />
           </div>
         </div>
@@ -420,7 +420,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
           <div>
             <label
               htmlFor="create-schedule-end-date"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               End date
             </label>
@@ -436,10 +436,10 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
             />
 
-            <p className="mt-1 text-xs text-gray-400 dark:text-slate-500">
+            <p className="mt-1 text-xs text-muted-foreground">
               Defaults to the start date. Pick the next day for
               overnight shifts.
             </p>
@@ -448,7 +448,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
           <div>
             <label
               htmlFor="create-schedule-end"
-              className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+              className="text-sm font-semibold text-foreground"
             >
               End time
             </label>
@@ -463,7 +463,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
                   event.target.value
                 )
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
+              className="mt-2 w-full rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
             />
           </div>
         </div>
@@ -471,7 +471,7 @@ export default function CreateScheduleForm({ role, onSuccess }) {
         <div>
           <label
             htmlFor="create-schedule-notes"
-            className="text-sm font-semibold text-gray-700 dark:text-slate-200"
+            className="text-sm font-semibold text-foreground"
           >
             Notes (optional)
           </label>
@@ -488,21 +488,21 @@ export default function CreateScheduleForm({ role, onSuccess }) {
               )
             }
             placeholder="Add any details for this shift..."
-            className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950"
+            className="mt-2 w-full resize-none rounded-xl border border-border bg-muted px-4 py-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
           />
         </div>
 
         {createScheduleError && (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
+          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
             Something went wrong during schedule creation. {createScheduleError}
           </div>
         )}
 
-        <div className="flex justify-end border-t border-gray-100 pt-5 dark:border-[#262626]">
+        <div className="flex justify-end border-t border-border pt-5">
           <button
             type="submit"
             disabled={createScheduleSubmitting}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60 dark:bg-[#2563eb] dark:hover:bg-[#1d4ed8]"
+            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
             {createScheduleSubmitting ? (
               <>

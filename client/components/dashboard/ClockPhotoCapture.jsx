@@ -119,15 +119,15 @@ export default function ClockPhotoCapture({ userId, onCaptured, onCancel }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-gray-200 bg-white p-5 shadow-xl dark:border-slate-700 dark:bg-[#111c2d]">
-        <h3 className="mb-1 text-sm font-semibold text-gray-900 dark:text-white">
+      <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-xl">
+        <h3 className="mb-1 text-sm font-semibold text-foreground">
           Confirm you're here
         </h3>
-        <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">
+        <p className="mb-4 text-xs text-muted-foreground">
           A photo is required with every clock-in as proof of presence.
         </p>
 
-        <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-xl bg-gray-100 dark:bg-slate-800">
+        <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-xl bg-muted">
           {status !== "captured" && (
             <video
               ref={videoRef}
@@ -148,7 +148,7 @@ export default function ClockPhotoCapture({ userId, onCaptured, onCancel }) {
           )}
 
           {status === "loading" && (
-            <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 dark:text-slate-500">
+            <div className="absolute inset-0 flex items-center justify-center text-xs text-muted-foreground">
               Starting camera…
             </div>
           )}
@@ -157,7 +157,7 @@ export default function ClockPhotoCapture({ userId, onCaptured, onCancel }) {
         <canvas ref={canvasRef} className="hidden" />
 
         {errorMessage && (
-          <p className="mb-3 text-xs font-medium text-rose-600 dark:text-rose-400">
+          <p className="mb-3 text-xs font-semibold text-rose-600 dark:text-rose-400">
             {errorMessage}
           </p>
         )}
@@ -166,7 +166,7 @@ export default function ClockPhotoCapture({ userId, onCaptured, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+            className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
           >
             Cancel
           </button>
@@ -176,7 +176,7 @@ export default function ClockPhotoCapture({ userId, onCaptured, onCancel }) {
               <button
                 type="button"
                 onClick={handleRetake}
-                className="flex-1 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-700"
+                className="flex-1 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
               >
                 Retake
               </button>
@@ -184,7 +184,7 @@ export default function ClockPhotoCapture({ userId, onCaptured, onCancel }) {
                 type="button"
                 onClick={handleConfirm}
                 disabled={status === "uploading"}
-                className="flex-1 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+                className="flex-1 rounded-xl bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand disabled:cursor-not-allowed disabled:bg-muted"
               >
                 {status === "uploading" ? "Uploading…" : "Confirm"}
               </button>
@@ -194,7 +194,7 @@ export default function ClockPhotoCapture({ userId, onCaptured, onCancel }) {
               type="button"
               onClick={handleTakePhoto}
               disabled={status !== "ready"}
-              className="flex-1 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-600 disabled:cursor-not-allowed disabled:bg-gray-300"
+              className="flex-1 rounded-xl bg-brand-dark px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand disabled:cursor-not-allowed disabled:bg-muted"
             >
               Take Photo
             </button>

@@ -92,23 +92,23 @@ function statusClass(status) {
     return "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300";
   }
 
-  return "bg-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-300";
+  return "bg-muted text-muted-foreground";
 }
 
 function StatCard({ label, value, sub, accent, icon: Icon }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-[#262626] dark:bg-[#121212]">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors">
       <div className="flex items-start justify-between">
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        {Icon && <Icon size={18} className="text-gray-400 dark:text-slate-500" />}
+        {Icon && <Icon size={18} className="text-muted-foreground" />}
       </div>
 
-      <p className={`mt-2 text-3xl font-bold ${accent || "text-gray-900 dark:text-white"}`}>
+      <p className={`mt-2 text-2xl font-semibold ${accent || "text-foreground"}`}>
         {value}
       </p>
-      {sub && <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
     </div>
   );
 }
@@ -149,8 +149,8 @@ function SiteAssignmentBanner({ message }) {
 function GpsStatus({ gpsState, distanceMeters }) {
   if (gpsState === "loading") {
     return (
-      <p className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-slate-500">
-        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-gray-300 dark:bg-[#262626]" />
+      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-muted" />
         Detecting location…
       </p>
     );
@@ -175,7 +175,7 @@ function GpsStatus({ gpsState, distanceMeters }) {
   }
 
   return (
-    <p className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-slate-400">
+    <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
       <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
       GPS: Verified · Within geofence
     </p>
@@ -711,7 +711,7 @@ export default function EmployeeDashboard() {
     ? "text-amber-600 dark:text-amber-400"
     : clockedIn
       ? "text-emerald-600 dark:text-emerald-400"
-      : "text-gray-400 dark:text-slate-500";
+      : "text-muted-foreground";
 
   const DialIcon = onMealBreak ? UtensilsCrossed : clockedIn ? CheckCircle2 : Clock;
 
@@ -752,7 +752,7 @@ export default function EmployeeDashboard() {
               ? "text-amber-600 dark:text-amber-400"
               : clockedIn
                 ? "text-emerald-600 dark:text-emerald-400"
-                : "text-gray-900 dark:text-white"
+                : "text-foreground"
           }
         />
 
@@ -781,21 +781,21 @@ export default function EmployeeDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-[#262626] dark:bg-[#121212]">
+        <div className="flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors">
           <div
             className={`flex h-24 w-24 items-center justify-center rounded-full border-4 shadow-lg transition-all ${
               onMealBreak
                 ? "border-amber-400 bg-amber-50 shadow-amber-100 dark:bg-amber-950/35 dark:shadow-amber-950/30"
                 : clockedIn
                   ? "border-emerald-500 bg-emerald-50 shadow-emerald-200 dark:bg-emerald-950/35 dark:shadow-emerald-950/30"
-                  : "border-gray-300 bg-gray-100 shadow-gray-200 dark:border-[#262626] dark:bg-[#1a1a1a] dark:shadow-none"
+                  : "border-border bg-muted shadow-gray-200 dark:shadow-none"
             }`}
           >
             <DialIcon className={`h-10 w-10 ${dialColor}`} strokeWidth={2} />
           </div>
 
           <div className="text-center">
-            <p className="text-lg font-semibold text-gray-900 dark:text-white">
+            <p className="text-lg font-semibold text-foreground">
               {onMealBreak
                 ? "On meal break"
                 : clockedIn
@@ -804,12 +804,12 @@ export default function EmployeeDashboard() {
             </p>
 
             {clockedIn && (
-              <p className="text-xs text-gray-500 dark:text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Clocked in at {fmt(clockInTime)}
               </p>
             )}
 
-            <p className="text-sm text-gray-500 dark:text-slate-400">
+            <p className="text-sm text-muted-foreground">
               {onMealBreak
                 ? `Break started at ${fmt(mealStartTime)}`
                 : clockedIn
@@ -830,10 +830,10 @@ export default function EmployeeDashboard() {
             disabled={!isInsideGeofence}
             className={`w-full max-w-xs rounded-2xl px-6 py-3.5 text-sm font-semibold text-white shadow-md transition-all ${
               !isInsideGeofence
-                ? "cursor-not-allowed bg-gray-300 shadow-none dark:bg-[#1a1a1a] dark:text-slate-400"
+                ? "cursor-not-allowed bg-muted text-muted-foreground shadow-none"
                 : clockedIn
                   ? "bg-rose-600 hover:-translate-y-0.5 hover:bg-rose-500"
-                  : "bg-blue-700 hover:-translate-y-0.5 hover:bg-blue-600"
+                  : "bg-brand-dark hover:-translate-y-0.5 hover:bg-brand"
             }`}
           >
             {clockBusy
@@ -844,7 +844,7 @@ export default function EmployeeDashboard() {
           </button>
 
           {clockError && (
-            <p className="max-w-xs text-center text-sm font-medium text-rose-600 dark:text-rose-400">
+            <p className="max-w-xs text-center text-sm font-semibold text-rose-600 dark:text-rose-400">
               {clockError}
             </p>
           )}
@@ -856,10 +856,10 @@ export default function EmployeeDashboard() {
               disabled={!isInsideGeofence}
               className={`flex w-full max-w-xs items-center justify-center gap-2 rounded-2xl border px-6 py-3 text-sm font-semibold transition-all ${
                 !isInsideGeofence
-                  ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-slate-500"
+                  ? "cursor-not-allowed border-border bg-muted text-muted-foreground"
                   : onMealBreak
                     ? "border-amber-400 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-950/35 dark:text-amber-300"
-                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-slate-200 dark:hover:bg-[#232323]"
+                    : "border-border bg-card text-foreground hover:bg-muted"
               }`}
             >
               <UtensilsCrossed className="h-4 w-4" />
@@ -869,7 +869,7 @@ export default function EmployeeDashboard() {
 
           {clockedIn && mealLog.length > 0 && (
             <div className="w-full max-w-xs space-y-1.5">
-              <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 Meal breaks
               </p>
 
@@ -879,12 +879,12 @@ export default function EmployeeDashboard() {
                 return (
                   <div
                     key={index}
-                    className="flex justify-between rounded-lg border border-gray-100 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-slate-300"
+                    className="flex justify-between rounded-lg border border-border bg-muted px-3 py-2 text-xs text-muted-foreground"
                   >
                     <span>
                       {fmt(meal.start)} - {fmt(meal.end)}
                     </span>
-                    <span className="text-gray-400 dark:text-slate-500">
+                    <span className="text-muted-foreground">
                       {durationMin} min
                     </span>
                   </div>
@@ -899,8 +899,8 @@ export default function EmployeeDashboard() {
           />
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-[#262626] dark:bg-[#121212]">
-          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors">
+          <h3 className="mb-4 text-sm font-semibold text-foreground">
             Upcoming Schedule
           </h3>
 
@@ -909,12 +909,12 @@ export default function EmployeeDashboard() {
               {[0, 1, 2].map((key) => (
                 <div
                   key={key}
-                  className="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-[#1a1a1a]"
+                  className="h-16 animate-pulse rounded-xl bg-muted"
                 />
               ))}
             </div>
           ) : upcomingShifts.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-500 dark:text-slate-400">
+            <p className="py-8 text-center text-sm text-muted-foreground">
               No upcoming shifts scheduled.
             </p>
           ) : (
@@ -925,23 +925,23 @@ export default function EmployeeDashboard() {
                   className={`flex items-center justify-between rounded-xl border px-4 py-3 ${
                     index === 0
                       ? "border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950/35"
-                      : "border-gray-100 bg-gray-50 dark:border-[#262626] dark:bg-[#1a1a1a]/60"
+                      : "border-border bg-muted"
                   }`}
                 >
                   <div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-semibold text-foreground">
                       {shift.date}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       {shift.relative}
                     </p>
                   </div>
 
                   <div className="text-right">
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                    <p className="text-sm font-semibold text-foreground">
                       {shift.shift}
                     </p>
-                    <p className="text-xs text-gray-500 dark:text-slate-400">
+                    <p className="text-xs text-muted-foreground">
                       {shift.detail}
                     </p>
                   </div>
@@ -952,8 +952,8 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-[#262626] dark:bg-[#121212]">
-        <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors">
+        <h3 className="mb-4 text-sm font-semibold text-foreground">
           Recent Attendance
         </h3>
 
@@ -962,23 +962,23 @@ export default function EmployeeDashboard() {
             {[0, 1, 2, 3].map((key) => (
               <div
                 key={key}
-                className="h-9 animate-pulse rounded-lg bg-gray-100 dark:bg-[#1a1a1a]"
+                className="h-9 animate-pulse rounded-lg bg-muted"
               />
             ))}
           </div>
         ) : attendanceRows.length === 0 ? (
-          <p className="py-8 text-center text-sm text-gray-500 dark:text-slate-400">
+          <p className="py-8 text-center text-sm text-muted-foreground">
             No clock records yet.
           </p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 dark:border-[#262626]">
+                <tr className="border-b border-border">
                   {["Date", "Clock In", "Clock Out", "Hours", "Status"].map((heading) => (
                     <th
                       key={heading}
-                      className="pb-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400"
+                      className="pb-3 text-left text-xs font-semibold text-muted-foreground"
                     >
                       {heading}
                     </th>
@@ -986,20 +986,20 @@ export default function EmployeeDashboard() {
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-gray-100 dark:divide-[#262626]">
+              <tbody className="divide-y divide-border">
                 {attendanceRows.map((row) => (
                   <tr
                     key={row.id}
-                    className="transition-colors hover:bg-gray-50 dark:hover:bg-[#1a1a1a]/60"
+                    className="transition-colors hover:bg-muted"
                   >
-                    <td className="py-3 text-gray-900 dark:text-white">{row.date}</td>
-                    <td className="py-3 text-gray-600 dark:text-slate-300">{row.clockIn}</td>
-                    <td className="py-3 text-gray-600 dark:text-slate-300">{row.clockOut}</td>
-                    <td className="py-3 text-gray-600 dark:text-slate-300">
+                    <td className="py-3 text-foreground">{row.date}</td>
+                    <td className="py-3 text-muted-foreground">{row.clockIn}</td>
+                    <td className="py-3 text-muted-foreground">{row.clockOut}</td>
+                    <td className="py-3 text-muted-foreground">
                       {row.hours === "—" ? row.hours : `${row.hours}h`}
                     </td>
                     <td className="py-3">
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusClass(row.status)}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusClass(row.status)}`}>
                         {row.status}
                       </span>
                     </td>

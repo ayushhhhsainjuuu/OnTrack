@@ -221,7 +221,7 @@ export default function VirtualKeyboardWidget() {
             onTouchStart={onDragStart}
             className="flex cursor-grab items-center justify-between rounded-t-xl bg-neutral-800 px-3 py-2 active:cursor-grabbing"
           >
-            <span className="text-xs font-medium text-neutral-300">
+            <span className="text-xs font-semibold text-neutral-300">
               On-screen Keyboard {targetRef.current ? '' : '— click a text field first'}
             </span>
             <button

@@ -27,11 +27,11 @@ function PreferenceToggle({
   return (
     <div className="flex items-center justify-between gap-4 py-4">
       <div>
-        <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+        <p className="text-sm font-semibold text-foreground">
           {label}
         </p>
 
-        <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-slate-400">
+        <p className="mt-1 text-xs leading-5 text-muted-foreground">
           {description}
         </p>
       </div>
@@ -43,8 +43,8 @@ function PreferenceToggle({
         onClick={() => onChange(!enabled)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition ${
           enabled
-            ? "bg-[#2563eb]"
-            : "bg-gray-300 dark:bg-slate-600"
+            ? "bg-brand"
+            : "bg-input"
         }`}
       >
         <span
@@ -58,13 +58,13 @@ function PreferenceToggle({
 }
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
+  "rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 const titleClass =
-  "text-base font-bold text-gray-900 dark:text-slate-100";
+  "text-lg font-semibold text-foreground";
 
 const descriptionClass =
-  "text-sm text-gray-500 dark:text-slate-400";
+  "text-sm text-muted-foreground";
 
 export default function SettingsPage() {
   const {
@@ -119,7 +119,7 @@ export default function SettingsPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <div className="flex items-center gap-3 text-sm font-medium text-gray-500 dark:text-slate-400">
+        <div className="flex items-center gap-3 text-sm font-semibold text-muted-foreground">
           <Loader2
             className="animate-spin"
             size={20}
@@ -134,15 +134,15 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Account
         </p>
 
-        <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="mt-1 text-2xl font-semibold text-foreground">
           Settings
         </h1>
 
-        <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Manage your profile, notifications,
           appearance, security, and account.
         </p>
@@ -152,7 +152,7 @@ export default function SettingsPage() {
       <section
         className={`${cardClass} overflow-hidden`}
       >
-        <div className="border-b border-gray-100 px-6 py-5 dark:border-[#262626]">
+        <div className="border-b border-border px-6 py-5">
           <h2 className={titleClass}>
             Profile information
           </h2>
@@ -164,16 +164,16 @@ export default function SettingsPage() {
 
         <div className="p-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#2563eb] text-2xl font-bold text-white shadow-lg shadow-blue-200 dark:shadow-blue-950/40">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-brand text-2xl font-semibold text-white shadow-lg shadow-blue-200 dark:shadow-blue-950/40">
               {initials}
             </div>
 
             <div className="min-w-0">
-              <h3 className="truncate text-xl font-bold text-gray-900 dark:text-white">
+              <h3 className="truncate text-lg font-semibold text-foreground">
                 {name}
               </h3>
 
-              <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] dark:bg-blue-950/50 dark:text-blue-300">
+              <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-brand-dark dark:bg-blue-950/50 dark:text-blue-300">
                 <ShieldCheck size={14} />
                 {role}
               </div>
@@ -214,7 +214,7 @@ export default function SettingsPage() {
       {/* Appearance */}
       <section className={`${cardClass} p-6`}>
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-blue-50 p-2.5 text-[#2563eb] dark:bg-blue-950/50 dark:text-blue-300">
+          <div className="rounded-xl bg-blue-50 p-2.5 text-brand dark:bg-blue-950/50 dark:text-blue-300">
             {isDark ? (
               <Moon size={20} />
             ) : (
@@ -233,9 +233,9 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#262626] dark:bg-[#1a1a1a] sm:flex-row sm:items-center">
+        <div className="mt-5 flex flex-col justify-between gap-4 rounded-xl border border-border bg-muted p-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-white p-2.5 text-gray-600 shadow-sm dark:bg-[#262626] dark:text-slate-200">
+            <div className="rounded-lg bg-card p-2.5 text-muted-foreground shadow-sm">
               {isDark ? (
                 <Moon size={19} />
               ) : (
@@ -244,11 +244,11 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+              <p className="text-sm font-semibold text-foreground">
                 {isDark ? "Dark mode" : "Light mode"}
               </p>
 
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+              <p className="mt-0.5 text-xs text-muted-foreground">
                 Current theme: {theme}
               </p>
             </div>
@@ -258,7 +258,7 @@ export default function SettingsPage() {
             type="button"
             onClick={toggleTheme}
             disabled={isThemeLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isThemeLoading ? (
               <>
@@ -287,9 +287,9 @@ export default function SettingsPage() {
       <section
         className={`${cardClass} px-6`}
       >
-        <div className="border-b border-gray-100 py-5 dark:border-[#262626]">
+        <div className="border-b border-border py-5">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-blue-50 p-2.5 text-[#2563eb] dark:bg-blue-950/50 dark:text-blue-300">
+            <div className="rounded-xl bg-blue-50 p-2.5 text-brand dark:bg-blue-950/50 dark:text-blue-300">
               <Bell size={20} />
             </div>
 
@@ -306,7 +306,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="divide-y divide-gray-100 dark:divide-[#262626]">
+        <div className="divide-y divide-border">
           <PreferenceToggle
             label="Email notifications"
             description="Receive important OnTrack account updates by email."
@@ -333,7 +333,7 @@ export default function SettingsPage() {
       {/* Account and security */}
       <section className={`${cardClass} p-6`}>
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-gray-100 p-2.5 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-200">
+          <div className="rounded-xl bg-muted p-2.5 text-muted-foreground">
             <LockKeyhole size={20} />
           </div>
 
@@ -378,7 +378,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Logout */}
-      <section className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm transition-all duration-200 dark:border-red-900/70 dark:bg-[#121212] dark:hover:shadow-lg dark:hover:shadow-black/40">
+      <section className="rounded-2xl border border-red-200 bg-card p-6 shadow-sm transition-all duration-200 dark:border-red-900/70 dark:hover:shadow-lg dark:hover:shadow-black/40">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
             <h2 className={titleClass}>
@@ -395,7 +395,7 @@ export default function SettingsPage() {
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="inline-flex min-w-32 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-w-32 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoggingOut ? (
               <>
@@ -416,7 +416,7 @@ export default function SettingsPage() {
         </div>
 
         {logoutError && (
-          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
+          <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 dark:border-red-900/70 dark:bg-red-950/30 dark:text-red-300">
             {logoutError}
           </div>
         )}
@@ -432,14 +432,14 @@ function ProfileItem({
   active = false,
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 dark:border-[#262626] dark:bg-[#1a1a1a] dark:hover:border-[#333333]">
+    <div className="rounded-xl border border-border bg-muted p-4 transition-all duration-200 dark:hover:border-border-hover">
       <div className="flex items-center gap-3">
-        <div className="rounded-lg bg-white p-2 text-gray-500 shadow-sm dark:bg-[#262626] dark:text-slate-300">
+        <div className="rounded-lg bg-card p-2 text-muted-foreground shadow-sm">
           <Icon size={18} />
         </div>
 
         <div className="min-w-0">
-          <p className="text-xs font-medium text-gray-500 dark:text-slate-400">
+          <p className="text-xs font-semibold text-muted-foreground">
             {label}
           </p>
 
@@ -447,7 +447,7 @@ function ProfileItem({
             className={`truncate text-sm font-semibold ${
               active
                 ? "text-emerald-700 dark:text-emerald-400"
-                : "text-gray-900 dark:text-slate-100"
+                : "text-foreground"
             }`}
           >
             {value}
@@ -466,19 +466,19 @@ function SecurityButton({
   return (
     <button
       type="button"
-      className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 dark:border-[#262626] dark:hover:border-blue-700 dark:hover:bg-blue-950/30"
+      className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-blue-50 dark:hover:border-blue-700 dark:hover:bg-blue-950/30"
     >
       <Icon
         size={18}
-        className="text-gray-500 dark:text-slate-400"
+        className="text-muted-foreground"
       />
 
       <div>
-        <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
+        <p className="text-sm font-semibold text-foreground">
           {title}
         </p>
 
-        <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+        <p className="mt-0.5 text-xs text-muted-foreground">
           {description}
         </p>
       </div>

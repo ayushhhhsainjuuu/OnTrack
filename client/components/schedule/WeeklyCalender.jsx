@@ -46,7 +46,7 @@ function formatMonthHeading(startDate, endDate) {
 }
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:-translate-y-0.5 dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
+  "rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 dark:hover:-translate-y-0.5 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 export default function WeeklyCalender({
   week = [],
@@ -118,14 +118,14 @@ export default function WeeklyCalender({
     <div className="space-y-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+          <h2 className="text-lg font-semibold text-foreground">
             {formatMonthHeading(
               weekStart,
               weekEnd
             )}
           </h2>
 
-          <p className="text-xs text-gray-500 dark:text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Week of{" "}
             {formatShortDate(weekStart)} –{" "}
             {formatShortDate(weekEnd)}
@@ -136,7 +136,7 @@ export default function WeeklyCalender({
           <button
             type="button"
             onClick={onPreviousWeek}
-            className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-[#262626] dark:text-slate-300 dark:hover:bg-[#1a1a1a] dark:hover:text-white"
+            className="rounded-lg border border-border p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
             aria-label="Previous week"
             title="Previous week"
           >
@@ -146,7 +146,7 @@ export default function WeeklyCalender({
           <button
             type="button"
             onClick={onToday}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 dark:border-[#262626] dark:text-slate-200 dark:hover:bg-[#1a1a1a] dark:hover:text-white"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-semibold text-foreground transition hover:bg-muted"
           >
             Today
           </button>
@@ -154,7 +154,7 @@ export default function WeeklyCalender({
           <button
             type="button"
             onClick={onNextWeek}
-            className="rounded-lg border border-gray-200 p-2 text-gray-500 transition hover:bg-gray-50 hover:text-gray-900 dark:border-[#262626] dark:text-slate-300 dark:hover:bg-[#1a1a1a] dark:hover:text-white"
+            className="rounded-lg border border-border p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
             aria-label="Next week"
             title="Next week"
           >
@@ -177,71 +177,71 @@ export default function WeeklyCalender({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <div className={`${cardClass} p-5 text-center`}>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+          <p className="text-2xl font-semibold text-foreground">
             {activeShifts.length}
           </p>
 
-          <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
+          <p className="mt-1 text-sm font-semibold text-foreground">
             Active Shifts
           </p>
 
-          <p className="text-xs text-gray-400 dark:text-slate-500">
+          <p className="text-xs text-muted-foreground">
             scheduled this week
           </p>
         </div>
 
         <div className={`${cardClass} p-5 text-center`}>
-          <p className="text-3xl font-bold text-gray-900 dark:text-white">
+          <p className="text-2xl font-semibold text-foreground">
             {totalHours}h
           </p>
 
-          <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
+          <p className="mt-1 text-sm font-semibold text-foreground">
             Total Hours
           </p>
 
-          <p className="text-xs text-gray-400 dark:text-slate-500">
+          <p className="text-xs text-muted-foreground">
             excluding leave and cancellations
           </p>
         </div>
 
         <div className={`${cardClass} p-5 text-center`}>
-          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+          <p className="text-2xl font-semibold text-emerald-600 dark:text-emerald-400">
             {approvedLeaveDays.length}
           </p>
 
-          <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
+          <p className="mt-1 text-sm font-semibold text-foreground">
             Approved Leave
           </p>
 
-          <p className="text-xs text-gray-400 dark:text-slate-500">
+          <p className="text-xs text-muted-foreground">
             {approvedLeaveLabels || "None"}
           </p>
         </div>
 
         <div className={`${cardClass} p-5 text-center`}>
-          <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+          <p className="text-2xl font-semibold text-purple-600 dark:text-purple-400">
             {daysOff.length}
           </p>
 
-          <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
+          <p className="mt-1 text-sm font-semibold text-foreground">
             Days Off
           </p>
 
-          <p className="text-xs text-gray-400 dark:text-slate-500">
+          <p className="text-xs text-muted-foreground">
             {dayOffLabels || "None"}
           </p>
         </div>
 
         <div className={`${cardClass} p-5 text-center`}>
-          <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+          <p className="text-2xl font-semibold text-red-600 dark:text-red-400">
             {cancelledShifts.length}
           </p>
 
-          <p className="mt-1 text-sm font-medium text-gray-700 dark:text-slate-200">
+          <p className="mt-1 text-sm font-semibold text-foreground">
             Cancelled
           </p>
 
-          <p className="text-xs text-gray-400 dark:text-slate-500">
+          <p className="text-xs text-muted-foreground">
             shifts this week
           </p>
         </div>

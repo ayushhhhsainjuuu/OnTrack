@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
 
         <button
           type="submit"
-          className="w-full rounded-2xl bg-[#062B63] px-4 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-950/20 transition hover:-translate-y-0.5 hover:bg-[#0A3C86] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-100"
+          className="w-full rounded-2xl bg-brand-dark px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-950/20 transition hover:-translate-y-0.5 hover:bg-brand hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-100"
         >
           Send reset link
         </button>
@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center">
           <Link
             href="/auth/login"
-            className="text-sm font-bold text-[#0A3C86] transition hover:text-[#062B63]"
+            className="text-sm font-semibold text-brand transition hover:text-brand-dark"
           >
             ← Back to login
           </Link>

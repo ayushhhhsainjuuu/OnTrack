@@ -9,10 +9,10 @@ export default function StatsCard({
   const positive = change >= 0;
 
   return (
-    <div className="flex items-start justify-between rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-slate-700 dark:bg-[#111c2d]">
+    <div className="flex items-start justify-between rounded-xl border border-border bg-card p-5 shadow-sm transition-colors">
       <div>
-        <p className="text-sm text-gray-500 dark:text-slate-400">{title}</p>
-        <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
+        <p className="text-sm text-muted-foreground">{title}</p>
+        <p className="mt-1 text-2xl font-semibold text-foreground">
           {value}
         </p>
 
@@ -31,8 +31,8 @@ export default function StatsCard({
       </div>
 
       {Icon && (
-        <div className="rounded-lg bg-gray-100 p-2 dark:bg-slate-700">
-          <Icon size={20} className="text-gray-500 dark:text-slate-300" />
+        <div className="rounded-lg bg-muted p-2">
+          <Icon size={20} className="text-muted-foreground" />
         </div>
       )}
     </div>

@@ -127,32 +127,32 @@ function weekBoundaries(weeksAgo) {
 
 function StatCard({ label, value, icon: Icon, accent }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:-translate-y-0.5 dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 dark:hover:-translate-y-0.5 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40">
       <div className="flex items-start justify-between">
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
         <Icon size={18} className={accent} />
       </div>
 
-      <p className={`mt-2 text-3xl font-bold ${accent}`}>{value}</p>
+      <p className={`mt-2 text-2xl font-semibold ${accent}`}>{value}</p>
     </div>
   );
 }
 
 function StatCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm dark:border-[#262626] dark:bg-[#121212]">
-      <div className="h-3 w-20 animate-pulse rounded bg-gray-100 dark:bg-[#1a1a1a]" />
-      <div className="mt-3 h-8 w-12 animate-pulse rounded bg-gray-100 dark:bg-[#1a1a1a]" />
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+      <div className="h-3 w-20 animate-pulse rounded bg-muted" />
+      <div className="mt-3 h-8 w-12 animate-pulse rounded bg-muted" />
     </div>
   );
 }
 
 function ChartCard({ title, children }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
-      <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-all duration-200 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40">
+      <h3 className="mb-4 text-sm font-semibold text-foreground">
         {title}
       </h3>
       {children}
@@ -234,11 +234,14 @@ export default function AnalyticsChart() {
     };
   }, []);
 
-  const gridColor = isDark ? "#334155" : "#e5e7eb";
-  const axisColor = isDark ? "#94a3b8" : "#6b7280";
-  const tooltipBackground = isDark ? "#121212" : "#ffffff";
-  const tooltipBorder = isDark ? "#334155" : "#e5e7eb";
-  const tooltipText = isDark ? "#f8fafc" : "#111827";
+  // Mirrors the --border / --muted-foreground / --card / --foreground token
+  // values from globals.css - Recharts needs literal color strings, so we
+  // keep these in sync with the design tokens instead of inventing new hex.
+  const gridColor = isDark ? "#334155" : "#e4e4e7";
+  const axisColor = isDark ? "#94a3b8" : "#71717a";
+  const tooltipBackground = isDark ? "#111c2d" : "#ffffff";
+  const tooltipBorder = isDark ? "#334155" : "#e4e4e7";
+  const tooltipText = isDark ? "#f8fafc" : "#171717";
 
   const stats = barData.reduce((acc, item) => {
     acc[item.name] = item.value;
@@ -301,7 +304,7 @@ export default function AnalyticsChart() {
 
       <ChartCard title="This Week">
         {loading ? (
-          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-[#1a1a1a]" />
+          <div className="h-64 animate-pulse rounded-xl bg-muted" />
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={barData}>
@@ -330,7 +333,7 @@ export default function AnalyticsChart() {
 
       <ChartCard title={`Shifts Trend (${WEEKS} weeks)`}>
         {loading ? (
-          <div className="h-64 animate-pulse rounded-xl bg-gray-100 dark:bg-[#1a1a1a]" />
+          <div className="h-64 animate-pulse rounded-xl bg-muted" />
         ) : (
           <ResponsiveContainer width="100%" height={260}>
             <LineChart data={lineData}>

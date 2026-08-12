@@ -78,7 +78,7 @@ const balances = [
     remaining: 12,
     used: 5,
     total: 17,
-    bar: "bg-[#2563eb]",
+    bar: "bg-brand",
     pct: 29,
   },
   {
@@ -173,7 +173,7 @@ function mapDbRequestToUi(row) {
 
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
+  "rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 function startOfWeek(date) {
   const result = new Date(date);
@@ -913,7 +913,7 @@ export default function SchedulePage() {
   if (isLoading || scheduleLoading) {
     return (
       <div className="flex min-h-[300px] items-center justify-center">
-        <p className="text-sm font-medium text-gray-500 dark:text-slate-400">
+        <p className="text-sm font-semibold text-muted-foreground">
           Loading schedule...
         </p>
       </div>
@@ -923,31 +923,31 @@ export default function SchedulePage() {
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Schedule & Leave
         </p>
 
-        <h1 className="mt-0.5 text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="mt-0.5 text-2xl font-semibold text-foreground">
           Schedule & Leave
         </h1>
 
-        <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-muted-foreground">
           Review your weekly shifts and manage your
           leave requests.
         </p>
       </div>
 
-      <div className="inline-flex rounded-xl bg-gray-100 p-1 dark:bg-[#1a1a1a]">
+      <div className="inline-flex rounded-xl bg-muted p-1">
         {availableTabs.map(
           (item) => (
             <button
               key={item}
               type="button"
               onClick={() => setTab(item)}
-              className={`rounded-lg px-4 py-1.5 text-sm font-medium transition ${
+              className={`rounded-lg px-4 py-1.5 text-sm font-semibold transition ${
                 tab === item
-                  ? "bg-white text-gray-900 shadow-sm dark:bg-[#262626] dark:text-white"
-                  : "text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200"
+                  ? "bg-card text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {item === "schedule"
@@ -984,7 +984,7 @@ export default function SchedulePage() {
       ) : tab === "create" ? (
         <div className="space-y-6">
           {successMessage && (
-            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
               <CheckCircle2 size={19} />
               {successMessage}
             </div>
@@ -998,7 +998,7 @@ export default function SchedulePage() {
       ) : (
         <div className="space-y-6">
           {successMessage && (
-            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
+            <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-semibold text-emerald-700 dark:border-emerald-900/70 dark:bg-emerald-950/30 dark:text-emerald-300">
               <CheckCircle2 size={19} />
               {successMessage}
             </div>
@@ -1011,25 +1011,25 @@ export default function SchedulePage() {
                 className={`${cardClass} p-5`}
               >
                 <div className="flex items-start justify-between">
-                  <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {balance.label}
                   </p>
 
                   <Umbrella
                     size={16}
-                    className="text-gray-300 dark:text-slate-600"
+                    className="text-muted-foreground"
                   />
                 </div>
 
-                <p className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
+                <p className="mt-2 text-2xl font-semibold text-foreground">
                   {balance.remaining}
                 </p>
 
-                <p className="text-xs text-gray-500 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   days remaining
                 </p>
 
-                <div className="mt-3 h-1.5 w-full rounded-full bg-gray-100 dark:bg-[#1a1a1a]">
+                <div className="mt-3 h-1.5 w-full rounded-full bg-muted">
                   <div
                     className={`h-full rounded-full ${balance.bar}`}
                     style={{
@@ -1038,7 +1038,7 @@ export default function SchedulePage() {
                   />
                 </div>
 
-                <p className="mt-2 text-xs text-gray-400 dark:text-slate-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   {balance.used} used of{" "}
                   {balance.total}
                 </p>
@@ -1053,11 +1053,11 @@ export default function SchedulePage() {
             the initial /api/leave load to finish.
           */}
           {leaveServiceUp !== true ? (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-[#262626] dark:bg-[#121212] dark:text-slate-400">
+            <div className="rounded-2xl border border-border bg-card p-6 text-sm font-semibold text-muted-foreground shadow-sm">
               Waiting for the leave service to come online…
             </div>
           ) : !storageReady ? (
-            <div className="rounded-2xl border border-gray-200 bg-white p-6 text-sm font-medium text-gray-500 shadow-sm dark:border-[#262626] dark:bg-[#121212] dark:text-slate-400">
+            <div className="rounded-2xl border border-border bg-card p-6 text-sm font-semibold text-muted-foreground shadow-sm">
               Loading leave requests…
             </div>
           ) : (
@@ -1068,11 +1068,11 @@ export default function SchedulePage() {
                 <section className="space-y-4">
                   <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                      <h2 className="text-lg font-semibold text-foreground">
                         My leave requests
                       </h2>
 
-                      <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         View pending and previous requests
                         or submit a new one.
                       </p>
@@ -1083,7 +1083,7 @@ export default function SchedulePage() {
                       onClick={() =>
                         setLeaveFormOpen(true)
                       }
-                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] dark:bg-[#2563eb] dark:hover:bg-[#1d4ed8]"
+                      className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-dark"
                     >
                       <Plus size={16} />
                       New Request
@@ -1104,7 +1104,7 @@ export default function SchedulePage() {
               {/* Manager review queue: shown to Owner/GM/Foreman so they can
                   approve or reject other people's leave requests. */}
               {canReviewLeaveRequests && (
-                <section className="border-t border-gray-200 pt-6 dark:border-[#262626]">
+                <section className="border-t border-border pt-6">
                   <ManagerReviewQueue
                     requests={
                       managerLeaveRequests

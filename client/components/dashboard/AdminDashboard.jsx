@@ -49,13 +49,13 @@ const leaveStatusClass = {
   Pending: "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
   Approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
   Rejected: "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
-  Cancelled: "bg-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-300",
+  Cancelled: "bg-muted text-muted-foreground",
 };
 
 const teamStatusClass = {
   "On Shift": "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300",
   "On Leave": "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
-  Off: "bg-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-300",
+  Off: "bg-muted text-muted-foreground",
 };
 
 function startOfWeek(date) {
@@ -92,19 +92,19 @@ function initialsFor(name) {
 
 function StatCard({ label, value, sub, accent, icon: Icon }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-colors dark:border-[#262626] dark:bg-[#121212]">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-colors">
       <div className="flex items-start justify-between">
-        <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-slate-400">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        {Icon && <Icon size={18} className="text-gray-400 dark:text-slate-500" />}
+        {Icon && <Icon size={18} className="text-muted-foreground" />}
       </div>
 
-      <p className={`mt-2 text-3xl font-bold ${accent || "text-gray-900 dark:text-white"}`}>
+      <p className={`mt-2 text-2xl font-semibold ${accent || "text-foreground"}`}>
         {value}
       </p>
 
-      {sub && <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-muted-foreground">{sub}</p>}
     </div>
   );
 }
@@ -311,10 +311,10 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-2xl font-semibold text-foreground">
           Admin Dashboard
         </h1>
-        <p className="text-sm text-gray-500 dark:text-slate-400">
+        <p className="text-sm text-muted-foreground">
           Manage your team, shifts, and approvals
         </p>
       </div>
@@ -353,19 +353,19 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-[#262626] dark:bg-[#121212]">
-          <h3 className="mb-4 text-sm font-semibold text-gray-900 dark:text-white">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors">
+          <h3 className="mb-4 text-sm font-semibold text-foreground">
             Team
           </h3>
 
           {teamLoading ? (
             <div className="space-y-2">
               {[0, 1, 2].map((key) => (
-                <div key={key} className="h-12 animate-pulse rounded-lg bg-gray-100 dark:bg-[#1a1a1a]" />
+                <div key={key} className="h-12 animate-pulse rounded-lg bg-muted" />
               ))}
             </div>
           ) : teamWithStatus.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-500 dark:text-slate-400">
+            <p className="py-8 text-center text-sm text-muted-foreground">
               {managedRoles.length === 0
                 ? "You don't currently manage any team members."
                 : "No employees found for your managed roles."}
@@ -375,24 +375,24 @@ export default function AdminDashboard() {
               {teamWithStatus.map((worker) => (
                 <div
                   key={worker.id}
-                  className="flex items-center justify-between border-b border-gray-100 py-2 last:border-0 dark:border-[#262626]"
+                  className="flex items-center justify-between border-b border-border py-2 last:border-0"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-200">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">
                       {initialsFor(worker.full_name)}
                     </div>
 
                     <div>
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-sm font-semibold text-foreground">
                         {worker.full_name}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-slate-400">
+                      <p className="text-xs text-muted-foreground">
                         {worker.role}
                       </p>
                     </div>
                   </div>
 
-                  <span className={`rounded-full px-2 py-1 text-xs font-medium ${teamStatusClass[worker.status]}`}>
+                  <span className={`rounded-full px-2 py-1 text-xs font-semibold ${teamStatusClass[worker.status]}`}>
                     {worker.status}
                   </span>
                 </div>
@@ -401,22 +401,22 @@ export default function AdminDashboard() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-colors dark:border-[#262626] dark:bg-[#121212]">
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors">
+          <h3 className="text-sm font-semibold text-foreground">
             Team Leave Requests
           </h3>
-          <p className="mb-4 text-xs text-gray-500 dark:text-slate-400">
+          <p className="mb-4 text-xs text-muted-foreground">
             For visibility only – reviewed by Owner, GM, or Foreman.
           </p>
 
           {leaveLoading ? (
             <div className="space-y-3">
               {[0, 1, 2].map((key) => (
-                <div key={key} className="h-16 animate-pulse rounded-xl bg-gray-100 dark:bg-[#1a1a1a]" />
+                <div key={key} className="h-16 animate-pulse rounded-xl bg-muted" />
               ))}
             </div>
           ) : recentTeamLeave.length === 0 ? (
-            <p className="py-8 text-center text-sm text-gray-500 dark:text-slate-400">
+            <p className="py-8 text-center text-sm text-muted-foreground">
               No leave requests from your team.
             </p>
           ) : (
@@ -427,18 +427,18 @@ export default function AdminDashboard() {
                 return (
                   <div
                     key={request.id}
-                    className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 transition-colors dark:border-[#262626] dark:bg-[#1a1a1a]/60"
+                    className="rounded-xl border border-border bg-muted px-4 py-3 transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      <p className="text-sm font-semibold text-foreground">
                         {request.employee_user?.full_name || "Unknown"}
                       </p>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${leaveStatusClass[status] || ""}`}>
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${leaveStatusClass[status] || ""}`}>
                         {status}
                       </span>
                     </div>
 
-                    <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+                    <p className="mt-0.5 text-xs text-muted-foreground">
                       {LEAVE_TYPE_LABEL[request.leave_type] || request.leave_type} ·{" "}
                       {leaveRangeLabel(request.start_date, request.end_date)}
                     </p>

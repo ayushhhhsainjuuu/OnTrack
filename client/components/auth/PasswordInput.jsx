@@ -15,7 +15,7 @@ export default function PasswordInput({
 
   return (
     <label className="block space-y-2">
-      <span className="text-sm font-bold text-slate-700">
+      <span className="text-sm font-semibold text-slate-700">
         {label}
       </span>
 
@@ -28,7 +28,7 @@ export default function PasswordInput({
           onChange={onChange}
           required={required}
           autoComplete="current-password"
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-12 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#0A3C86] focus:ring-4 focus:ring-blue-100"
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3.5 pr-12 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-brand focus:ring-4 focus:ring-blue-100"
         />
 
         <button
@@ -36,7 +36,7 @@ export default function PasswordInput({
           onClick={() => setShowPassword((current) => !current)}
           aria-label={showPassword ? "Hide password" : "Show password"}
           title={showPassword ? "Hide password" : "Show password"}
-          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-[#0A3C86] focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-brand focus:outline-none focus:ring-2 focus:ring-blue-200"
         >
           {showPassword ? (
             <EyeOff size={19} />

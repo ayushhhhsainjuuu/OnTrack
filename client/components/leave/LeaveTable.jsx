@@ -17,7 +17,7 @@ const statusStyles = {
   Rejected:
     "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
   Cancelled:
-    "bg-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-300",
+    "bg-muted text-muted-foreground",
 };
 
 function StatusIcon({ status }) {
@@ -43,7 +43,7 @@ function StatusIcon({ status }) {
     return (
       <Ban
         size={17}
-        className="text-gray-500 dark:text-slate-400"
+        className="text-muted-foreground"
       />
     );
   }
@@ -69,7 +69,7 @@ function RequestCard({ request, onCancel }) {
               : request.status === "Rejected"
                 ? "bg-red-100 dark:bg-red-950/50"
                 : request.status === "Cancelled"
-                  ? "bg-gray-100 dark:bg-[#1a1a1a]"
+                  ? "bg-muted"
                   : "bg-amber-100 dark:bg-amber-950/50"
           }`}
         >
@@ -81,15 +81,15 @@ function RequestCard({ request, onCancel }) {
             <p
               className={`text-sm font-semibold ${
                 request.status === "Cancelled"
-                  ? "text-gray-500 line-through dark:text-slate-500"
-                  : "text-gray-900 dark:text-white"
+                  ? "text-muted-foreground line-through"
+                  : "text-foreground"
               }`}
             >
               {request.type}
             </p>
 
             <span
-              className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+              className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${
                 statusStyles[request.status]
               }`}
             >
@@ -97,7 +97,7 @@ function RequestCard({ request, onCancel }) {
             </span>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-slate-400">
+          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1">
               <CalendarDays size={12} />
               {request.range}
@@ -109,7 +109,7 @@ function RequestCard({ request, onCancel }) {
           </div>
 
           {request.reason && (
-            <p className="mt-2 max-w-xl text-xs leading-5 text-gray-500 dark:text-slate-400">
+            <p className="mt-2 max-w-xl text-xs leading-5 text-muted-foreground">
               {request.reason}
             </p>
           )}
@@ -150,20 +150,20 @@ export default function LeaveTable({
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
-        <div className="border-b border-gray-100 px-5 py-4 dark:border-[#262626]">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40">
+        <div className="border-b border-border px-5 py-4">
           <div className="flex items-center gap-2">
             <Clock
               size={18}
               className="text-amber-500"
             />
 
-            <h2 className="text-base font-bold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-foreground">
               Pending requests
             </h2>
           </div>
 
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             Requests waiting for manager review.
           </p>
         </div>
@@ -175,17 +175,17 @@ export default function LeaveTable({
               className="mx-auto text-emerald-400"
             />
 
-            <p className="mt-3 text-sm font-semibold text-gray-900 dark:text-white">
+            <p className="mt-3 text-sm font-semibold text-foreground">
               No pending requests
             </p>
 
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               You do not currently have any requests
               waiting for review.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
+          <div className="divide-y divide-border">
             {pendingRequests.map((request) => (
               <RequestCard
                 key={request.id}
@@ -197,20 +197,20 @@ export default function LeaveTable({
         )}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
-        <div className="border-b border-gray-100 px-5 py-4 dark:border-[#262626]">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40">
+        <div className="border-b border-border px-5 py-4">
           <div className="flex items-center gap-2">
             <History
               size={18}
               className="text-blue-500"
             />
 
-            <h2 className="text-base font-bold text-gray-900 dark:text-white">
+            <h2 className="text-lg font-semibold text-foreground">
               Leave history
             </h2>
           </div>
 
-          <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+          <p className="mt-1 text-xs text-muted-foreground">
             Approved, rejected, and cancelled requests.
           </p>
         </div>
@@ -219,15 +219,15 @@ export default function LeaveTable({
           <div className="px-6 py-10 text-center">
             <History
               size={26}
-              className="mx-auto text-gray-300 dark:text-slate-600"
+              className="mx-auto text-muted-foreground"
             />
 
-            <p className="mt-3 text-sm font-semibold text-gray-900 dark:text-white">
+            <p className="mt-3 text-sm font-semibold text-foreground">
               No leave history
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
+          <div className="divide-y divide-border">
             {pastRequests.map((request) => (
               <RequestCard
                 key={request.id}

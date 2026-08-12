@@ -235,24 +235,24 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-gray-900 transition-colors duration-200 dark:bg-black dark:text-slate-100">
+    <div className="min-h-screen bg-app-bg text-foreground transition-colors duration-200">
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-[#E2E8F0] bg-white text-gray-900 transition-transform duration-200 dark:border-zinc-800 dark:bg-[#0A0A0A] dark:text-slate-100 md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border bg-card text-foreground transition-transform duration-200 md:translate-x-0 ${
           open
             ? "translate-x-0"
             : "-translate-x-full"
         }`}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2.5 border-b border-[#E2E8F0] px-6 dark:border-zinc-800">
+        <div className="flex h-16 items-center gap-2.5 border-b border-border px-6">
           <img
             src="/ontrack-logo.png"
             alt="OnTrack"
             className="h-9 w-9 rounded-xl"
           />
 
-          <span className="text-lg font-bold">
+          <span className="text-lg font-semibold">
             OnTrack
           </span>
         </div>
@@ -278,10 +278,10 @@ export default function DashboardLayout({
                   onClick={() =>
                     setOpen(false)
                   }
-                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors ${
                     active
-                      ? "bg-[#EFF6FF] text-[#2563EB] dark:border dark:border-zinc-700 dark:bg-[#262626] dark:text-white"
-                      : "text-[#1E293B] hover:bg-[#EFF6FF] hover:text-[#2563EB] dark:text-[#CBD5E1] dark:hover:bg-[#171717] dark:hover:text-white"
+                      ? "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   <Icon size={18} />
@@ -289,7 +289,7 @@ export default function DashboardLayout({
                   {label}
 
                   {active && (
-                    <span className="ml-auto text-[#2563EB]/70 dark:text-white/70">
+                    <span className="ml-auto text-blue-600/70 dark:text-blue-300/70">
                       ›
                     </span>
                   )}
@@ -300,9 +300,9 @@ export default function DashboardLayout({
         </nav>
 
         {/* User card */}
-        <div className="border-t border-[#E2E8F0] p-3 dark:border-zinc-800">
-          <div className="flex items-center gap-3 rounded-xl bg-gray-100 px-3 py-2.5 dark:border dark:border-[#262626] dark:bg-[#171717]">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold text-white">
+        <div className="border-t border-border p-3">
+          <div className="flex items-center gap-3 rounded-xl bg-muted px-3 py-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
               {isLoading ? (
                 <Loader2
                   size={16}
@@ -314,13 +314,13 @@ export default function DashboardLayout({
             </div>
 
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium">
+              <p className="truncate text-sm font-semibold">
                 {isLoading
                   ? "Loading..."
                   : name}
               </p>
 
-              <p className="truncate text-xs text-gray-500 dark:text-slate-400">
+              <p className="truncate text-xs text-muted-foreground">
                 {isLoading
                   ? "Checking account"
                   : role}
@@ -340,10 +340,10 @@ export default function DashboardLayout({
 
       {/* Main column */}
       <div className="md:pl-64">
-        <header className="sticky top-0 z-20 flex h-16 items-center border-b border-gray-200 bg-white/80 px-4 backdrop-blur transition-colors duration-200 dark:border-zinc-800 dark:bg-[#121212]/90 md:px-8">
+        <header className="sticky top-0 z-20 flex h-16 items-center border-b border-border bg-card/80 px-4 backdrop-blur transition-colors duration-200 md:px-8">
           <button
             type="button"
-            className="-ml-2 rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-[#1a1a1a] md:hidden"
+            className="-ml-2 rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
             onClick={() => setOpen(true)}
             aria-label="Open navigation"
           >
@@ -365,7 +365,7 @@ export default function DashboardLayout({
                     (current) => !current
                   )
                 }
-                className="relative rounded-lg p-2 text-gray-600 transition hover:bg-gray-100 dark:text-slate-300 dark:hover:bg-[#1a1a1a]"
+                className="relative rounded-lg p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                 aria-label={`Notifications, ${unreadCount} unread`}
                 aria-expanded={
                   notificationsOpen
@@ -374,7 +374,7 @@ export default function DashboardLayout({
                 <Bell size={20} />
 
                 {unreadCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold leading-none text-white dark:border-[#121212]">
+                  <span className="absolute -right-1 -top-1 flex min-h-5 min-w-5 items-center justify-center rounded-full border-2 border-card bg-red-500 px-1 text-xs font-semibold leading-none text-white">
                     {unreadCount > 9
                       ? "9+"
                       : unreadCount}
@@ -383,15 +383,15 @@ export default function DashboardLayout({
               </button>
 
               {notificationsOpen && (
-                <div className="fixed left-4 right-4 top-16 z-50 mt-2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-zinc-800 dark:bg-[#171717] sm:absolute sm:left-auto sm:right-0 sm:top-full sm:w-[390px]">
+                <div className="fixed left-4 right-4 top-16 z-50 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:w-[390px]">
                   {/* Header */}
-                  <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-zinc-800">
+                  <div className="flex items-center justify-between border-b border-border px-5 py-4">
                     <div>
-                      <h2 className="text-sm font-bold text-gray-900 dark:text-white">
+                      <h2 className="text-sm font-semibold text-foreground">
                         Notifications
                       </h2>
 
-                      <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
+                      <p className="mt-0.5 text-xs text-muted-foreground">
                         {unreadCount === 0
                           ? "You are all caught up"
                           : `${unreadCount} unread notification${
@@ -410,7 +410,7 @@ export default function DashboardLayout({
                           false
                         )
                       }
-                      className="rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 dark:text-slate-500 dark:hover:bg-[#1a1a1a] dark:hover:text-slate-200"
+                      className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                       aria-label="Close notifications"
                     >
                       <X size={18} />
@@ -422,15 +422,15 @@ export default function DashboardLayout({
                     {notifications.length ===
                     0 ? (
                       <div className="px-6 py-12 text-center">
-                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-[#1a1a1a] dark:text-slate-500">
+                        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
                           <Bell size={21} />
                         </div>
 
-                        <p className="mt-3 text-sm font-semibold text-gray-900 dark:text-white">
+                        <p className="mt-3 text-sm font-semibold text-foreground">
                           No notifications
                         </p>
 
-                        <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                        <p className="mt-1 text-xs text-muted-foreground">
                           New schedule and
                           account updates will
                           appear here.
@@ -449,9 +449,9 @@ export default function DashboardLayout({
                                 notification.id
                               )
                             }
-                            className={`flex w-full gap-3 border-b border-gray-100 px-5 py-4 text-left transition last:border-0 dark:border-zinc-800 ${
+                            className={`flex w-full gap-3 border-b border-border px-5 py-4 text-left transition last:border-0 ${
                               notification.read
-                                ? "bg-white hover:bg-gray-50 dark:bg-[#171717] dark:hover:bg-[#1a1a1a]"
+                                ? "bg-card hover:bg-muted"
                                 : "bg-blue-50/60 hover:bg-blue-50 dark:bg-blue-950/20 dark:hover:bg-blue-950/30"
                             }`}
                           >
@@ -463,7 +463,7 @@ export default function DashboardLayout({
 
                             <div className="min-w-0 flex-1">
                               <div className="flex items-start justify-between gap-3">
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                                <p className="text-sm font-semibold text-foreground">
                                   {
                                     notification.title
                                   }
@@ -474,13 +474,13 @@ export default function DashboardLayout({
                                 )}
                               </div>
 
-                              <p className="mt-1 text-xs leading-5 text-gray-500 dark:text-slate-400">
+                              <p className="mt-1 text-xs leading-5 text-muted-foreground">
                                 {
                                   notification.message
                                 }
                               </p>
 
-                              <p className="mt-1.5 text-[11px] font-medium text-gray-400 dark:text-slate-500">
+                              <p className="mt-1.5 text-xs font-semibold text-muted-foreground">
                                 {
                                   notification.time
                                 }
@@ -494,7 +494,7 @@ export default function DashboardLayout({
 
                   {/* Footer */}
                   {notifications.length > 0 && (
-                    <div className="flex items-center justify-between border-t border-gray-100 px-4 py-3 dark:border-zinc-800">
+                    <div className="flex items-center justify-between border-t border-border px-4 py-3">
                       <button
                         type="button"
                         onClick={markAllAsRead}
@@ -514,7 +514,7 @@ export default function DashboardLayout({
                         onClick={
                           clearNotifications
                         }
-                        className="rounded-lg px-3 py-2 text-xs font-semibold text-gray-500 transition hover:bg-gray-100 hover:text-red-600 dark:text-slate-400 dark:hover:bg-[#1a1a1a] dark:hover:text-red-400"
+                        className="rounded-lg px-3 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-red-600 dark:hover:text-red-400"
                       >
                         Clear all
                       </button>
@@ -525,7 +525,7 @@ export default function DashboardLayout({
             </div>
 
             {/* Avatar */}
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#2563eb] text-sm font-semibold text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
               {isLoading ? (
                 <Loader2
                   size={16}

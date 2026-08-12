@@ -26,7 +26,7 @@ export default function AuthShell({ title, subtitle, badge, children }) {
                 </div>
 
                 <div>
-                  <p className="text-xl font-semibold text-white">OnTrack</p>
+                  <p className="text-lg font-semibold text-white">OnTrack</p>
                   <p className="text-sm font-normal text-slate-300">
                     Secure workforce access
                   </p>
@@ -36,13 +36,13 @@ export default function AuthShell({ title, subtitle, badge, children }) {
 
             <div className="rounded-[1.5rem] border border-white/20 bg-white p-7 shadow-2xl shadow-black/30 backdrop-blur-xl sm:p-8">
               {badge && (
-                <div className="mb-4 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-[#0A3C86]">
+                <div className="mb-4 inline-flex rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand">
                   {badge}
                 </div>
               )}
 
               <div className="mb-6">
-                <h2 className="text-3xl font-semibold tracking-tight text-slate-950">
+                <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
                   {title}
                 </h2>
 

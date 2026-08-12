@@ -20,7 +20,7 @@ const statusStyles = {
   Rejected:
     "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
   Cancelled:
-    "bg-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-300",
+    "bg-muted text-muted-foreground",
 };
 
 function EmployeeAvatar({ name }) {
@@ -32,7 +32,7 @@ function EmployeeAvatar({ name }) {
     .toUpperCase();
 
   return (
-    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700 dark:bg-blue-950/50 dark:text-blue-300">
       {initials}
     </div>
   );
@@ -75,8 +75,8 @@ export default function ManagerReviewQueue({
 
   return (
     <>
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
-        <div className="border-b border-gray-100 px-5 py-5 dark:border-[#262626]">
+      <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-200 dark:hover:border-border-hover dark:hover:shadow-lg dark:hover:shadow-black/40">
+        <div className="border-b border-border px-5 py-5">
           <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
             <div>
               <div className="flex items-center gap-2">
@@ -85,18 +85,18 @@ export default function ManagerReviewQueue({
                   className="text-blue-600 dark:text-blue-400"
                 />
 
-                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                <h2 className="text-lg font-semibold text-foreground">
                   Manager leave review
                 </h2>
 
                 {pendingCount > 0 && (
-                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
+                  <span className="rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-950/50 dark:text-amber-300">
                     {pendingCount} pending
                   </span>
                 )}
               </div>
 
-              <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Review and decide employee leave requests.
               </p>
             </div>
@@ -105,7 +105,7 @@ export default function ManagerReviewQueue({
               <div className="relative">
                 <Search
                   size={17}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-slate-500"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 />
 
                 <input
@@ -113,14 +113,14 @@ export default function ManagerReviewQueue({
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search employee..."
-                  className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950 sm:w-60"
+                  className="w-full rounded-xl border border-border bg-muted py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950 sm:w-60"
                 />
               </div>
 
               <select
                 value={statusFilter}
                 onChange={(event) => setStatusFilter(event.target.value)}
-                className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-slate-200 dark:focus:ring-blue-950"
+                className="rounded-xl border border-border bg-muted px-4 py-2.5 text-sm font-semibold text-foreground outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-950"
               >
                 <option value="All">All statuses</option>
                 <option value="Pending">Pending</option>
@@ -139,16 +139,16 @@ export default function ManagerReviewQueue({
               className="mx-auto text-emerald-400"
             />
 
-            <p className="mt-3 text-sm font-semibold text-gray-900 dark:text-white">
+            <p className="mt-3 text-sm font-semibold text-foreground">
               No matching requests
             </p>
 
-            <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+            <p className="mt-1 text-xs text-muted-foreground">
               Try changing the employee search or status filter.
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
+          <div className="divide-y divide-border">
             {filteredRequests.map((request) => (
               <div
                 key={request.id}
@@ -159,12 +159,12 @@ export default function ManagerReviewQueue({
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                      <p className="text-sm font-semibold text-foreground">
                         {request.employee}
                       </p>
 
                       <span
-                        className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide ${
+                        className={`rounded-full px-2.5 py-1 text-xs font-semibold uppercase tracking-wide ${
                           statusStyles[request.status]
                         }`}
                       >
@@ -172,15 +172,15 @@ export default function ManagerReviewQueue({
                       </span>
                     </div>
 
-                    <p className="mt-1 text-sm font-semibold text-gray-700 dark:text-slate-200">
+                    <p className="mt-1 text-sm font-semibold text-foreground">
                       {request.type}
                     </p>
 
-                    <p className="mt-1 text-xs text-gray-500 dark:text-slate-400">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {request.range} · Submitted {request.submitted}
                     </p>
 
-                    <p className="mt-2 max-w-2xl text-xs leading-5 text-gray-500 dark:text-slate-400">
+                    <p className="mt-2 max-w-2xl text-xs leading-5 text-muted-foreground">
                       {request.reason}
                     </p>
 
@@ -224,7 +224,7 @@ export default function ManagerReviewQueue({
                       Rejected
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
                       <Clock size={16} />
                       Closed
                     </span>

@@ -13,7 +13,7 @@ export default function DashboardPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 text-sm font-medium text-gray-500 dark:text-slate-400">
+      <div className="p-6 text-sm font-semibold text-muted-foreground">
         Loading dashboard...
       </div>
     );
