@@ -6,9 +6,6 @@ import {
   Mail,
   Briefcase,
   Bell,
-  CalendarDays,
-  Clock3,
-  LockKeyhole,
   LogOut,
   Loader2,
   ShieldCheck,
@@ -144,7 +141,7 @@ export default function SettingsPage() {
 
         <p className="mt-1 text-sm text-gray-500 dark:text-slate-400">
           Manage your profile, notifications,
-          appearance, security, and account.
+          appearance, and account.
         </p>
       </div>
 
@@ -330,53 +327,6 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Account and security */}
-      <section className={`${cardClass} p-6`}>
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-gray-100 p-2.5 text-gray-600 dark:bg-slate-700 dark:text-slate-200">
-            <LockKeyhole size={20} />
-          </div>
-
-          <div>
-            <h2 className={titleClass}>
-              Account and security
-            </h2>
-
-            <p className={`mt-0.5 ${descriptionClass}`}>
-              Manage your password and account
-              security.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <SecurityButton
-            icon={LockKeyhole}
-            title="Change password"
-            description="Update your account password."
-          />
-
-          <SecurityButton
-            icon={CalendarDays}
-            title="Work preferences"
-            description="View your scheduling preferences."
-          />
-        </div>
-
-        <div className="mt-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/60 dark:bg-amber-950/30">
-          <Clock3
-            size={17}
-            className="mt-0.5 shrink-0 text-amber-700 dark:text-amber-400"
-          />
-
-          <p className="text-xs leading-5 text-amber-800 dark:text-amber-300">
-            Password changes and work preferences
-            are currently display-only. Backend
-            functionality can be connected later.
-          </p>
-        </div>
-      </section>
-
       {/* Logout */}
       <section className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-red-900/70 dark:bg-[#1E293B]">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
@@ -455,33 +405,5 @@ function ProfileItem({
         </div>
       </div>
     </div>
-  );
-}
-
-function SecurityButton({
-  icon: Icon,
-  title,
-  description,
-}) {
-  return (
-    <button
-      type="button"
-      className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-3 text-left transition hover:border-indigo-200 hover:bg-indigo-50 dark:border-slate-700 dark:hover:border-indigo-700 dark:hover:bg-indigo-950/30"
-    >
-      <Icon
-        size={18}
-        className="text-gray-500 dark:text-slate-400"
-      />
-
-      <div>
-        <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">
-          {title}
-        </p>
-
-        <p className="mt-0.5 text-xs text-gray-500 dark:text-slate-400">
-          {description}
-        </p>
-      </div>
-    </button>
   );
 }
