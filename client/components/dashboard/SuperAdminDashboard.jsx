@@ -259,7 +259,7 @@ export default function SuperAdminDashboard() {
   );
 
   return (
-    <div className="-m-4 min-h-[calc(100vh-4rem)] space-y-6 p-4 dark:bg-black md:-m-8 md:p-8">
+    <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
           Super Admin

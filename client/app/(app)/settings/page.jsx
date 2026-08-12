@@ -40,7 +40,7 @@ function PreferenceToggle({
         onClick={() => onChange(!enabled)}
         className={`relative h-6 w-11 shrink-0 rounded-full transition ${
           enabled
-            ? "bg-[#6366F1]"
+            ? "bg-[#2563eb]"
             : "bg-gray-300 dark:bg-slate-600"
         }`}
       >
@@ -55,7 +55,7 @@ function PreferenceToggle({
 }
 
 const cardClass =
-  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors duration-200 dark:border-slate-700 dark:bg-[#1E293B]";
+  "rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40";
 
 const titleClass =
   "text-base font-bold text-gray-900 dark:text-slate-100";
@@ -149,7 +149,7 @@ export default function SettingsPage() {
       <section
         className={`${cardClass} overflow-hidden`}
       >
-        <div className="border-b border-gray-100 px-6 py-5 dark:border-slate-700">
+        <div className="border-b border-gray-100 px-6 py-5 dark:border-[#262626]">
           <h2 className={titleClass}>
             Profile information
           </h2>
@@ -161,7 +161,7 @@ export default function SettingsPage() {
 
         <div className="p-6">
           <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#6366F1] text-2xl font-bold text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-950/40">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-[#2563eb] text-2xl font-bold text-white shadow-lg shadow-blue-200 dark:shadow-blue-950/40">
               {initials}
             </div>
 
@@ -170,7 +170,7 @@ export default function SettingsPage() {
                 {name}
               </h3>
 
-              <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-[#4F46E5] dark:bg-indigo-950/50 dark:text-indigo-300">
+              <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#1d4ed8] dark:bg-blue-950/50 dark:text-blue-300">
                 <ShieldCheck size={14} />
                 {role}
               </div>
@@ -211,7 +211,7 @@ export default function SettingsPage() {
       {/* Appearance */}
       <section className={`${cardClass} p-6`}>
         <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-indigo-50 p-2.5 text-[#6366F1] dark:bg-indigo-950/50 dark:text-indigo-300">
+          <div className="rounded-xl bg-blue-50 p-2.5 text-[#2563eb] dark:bg-blue-950/50 dark:text-blue-300">
             {isDark ? (
               <Moon size={20} />
             ) : (
@@ -230,9 +230,9 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="mt-5 flex flex-col justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-slate-700 dark:bg-slate-800/60 sm:flex-row sm:items-center">
+        <div className="mt-5 flex flex-col justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-[#262626] dark:bg-[#1a1a1a] sm:flex-row sm:items-center">
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-white p-2.5 text-gray-600 shadow-sm dark:bg-slate-700 dark:text-slate-200">
+            <div className="rounded-lg bg-white p-2.5 text-gray-600 shadow-sm dark:bg-[#262626] dark:text-slate-200">
               {isDark ? (
                 <Moon size={19} />
               ) : (
@@ -255,7 +255,7 @@ export default function SettingsPage() {
             type="button"
             onClick={toggleTheme}
             disabled={isThemeLoading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6366F1] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isThemeLoading ? (
               <>
@@ -284,9 +284,9 @@ export default function SettingsPage() {
       <section
         className={`${cardClass} px-6`}
       >
-        <div className="border-b border-gray-100 py-5 dark:border-slate-700">
+        <div className="border-b border-gray-100 py-5 dark:border-[#262626]">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-indigo-50 p-2.5 text-[#6366F1] dark:bg-indigo-950/50 dark:text-indigo-300">
+            <div className="rounded-xl bg-blue-50 p-2.5 text-[#2563eb] dark:bg-blue-950/50 dark:text-blue-300">
               <Bell size={20} />
             </div>
 
@@ -303,7 +303,7 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <div className="divide-y divide-gray-100 dark:divide-slate-700">
+        <div className="divide-y divide-gray-100 dark:divide-[#262626]">
           <PreferenceToggle
             label="Email notifications"
             description="Receive important OnTrack account updates by email."
@@ -328,7 +328,7 @@ export default function SettingsPage() {
       </section>
 
       {/* Logout */}
-      <section className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm transition-colors duration-200 dark:border-red-900/70 dark:bg-[#1E293B]">
+      <section className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm transition-all duration-200 dark:border-red-900/70 dark:bg-[#121212] dark:hover:shadow-lg dark:hover:shadow-black/40">
         <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-center">
           <div>
             <h2 className={titleClass}>
@@ -345,7 +345,7 @@ export default function SettingsPage() {
             type="button"
             onClick={handleLogout}
             disabled={isLoggingOut}
-            className="inline-flex min-w-32 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex min-w-32 items-center justify-center gap-2 rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoggingOut ? (
               <>
@@ -382,9 +382,9 @@ function ProfileItem({
   active = false,
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-colors dark:border-slate-700 dark:bg-slate-800/60">
+    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all duration-200 dark:border-[#262626] dark:bg-[#1a1a1a] dark:hover:border-[#333333]">
       <div className="flex items-center gap-3">
-        <div className="rounded-lg bg-white p-2 text-gray-500 shadow-sm dark:bg-slate-700 dark:text-slate-300">
+        <div className="rounded-lg bg-white p-2 text-gray-500 shadow-sm dark:bg-[#262626] dark:text-slate-300">
           <Icon size={18} />
         </div>
 

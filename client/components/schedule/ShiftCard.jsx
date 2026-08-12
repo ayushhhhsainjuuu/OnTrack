@@ -6,12 +6,12 @@ export default function ShiftCard({ shift }) {
 
   return (
     <div
-      className={`relative rounded-2xl border p-4 shadow-sm transition-colors ${
+      className={`relative rounded-2xl border p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg dark:hover:shadow-black/40 ${
         isCancelled
           ? "border-red-300 bg-red-50/70 dark:border-red-800 dark:bg-red-950/25"
           : isToday
-            ? "border-indigo-400 bg-indigo-50/70 ring-2 ring-indigo-100 dark:border-indigo-500 dark:bg-indigo-950/35 dark:ring-indigo-950"
-            : "border-gray-200 bg-white dark:border-slate-700 dark:bg-[#1E293B]"
+            ? "border-blue-400 bg-blue-50/70 ring-2 ring-blue-100 dark:border-blue-500 dark:bg-blue-950/35 dark:ring-blue-950"
+            : "border-gray-200 bg-white dark:border-[#262626] dark:bg-[#121212]"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
@@ -31,7 +31,7 @@ export default function ShiftCard({ shift }) {
           </span>
         ) : (
           isToday && (
-            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+            <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
               Today
             </span>
           )
@@ -43,7 +43,7 @@ export default function ShiftCard({ shift }) {
           isCancelled
             ? "text-red-500 line-through dark:text-red-400"
             : isToday
-              ? "text-[#6366F1] dark:text-indigo-400"
+              ? "text-blue-600 dark:text-blue-400"
               : "text-gray-900 dark:text-white"
         }`}
       >

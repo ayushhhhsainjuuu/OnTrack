@@ -19,8 +19,8 @@ function Initials({ name }) {
 
 export default function TimesheetTable({ timesheets = [] }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-colors dark:border-slate-700 dark:bg-[#1E293B]">
-      <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
+      <div className="border-b border-gray-100 px-5 py-4 dark:border-[#262626]">
         <h2 className="text-base font-bold text-gray-900 dark:text-white">
           Employee Timesheets
         </h2>
@@ -50,7 +50,7 @@ export default function TimesheetTable({ timesheets = [] }) {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50 dark:border-slate-700 dark:bg-slate-800/60">
+              <tr className="border-b border-gray-200 bg-gray-50 dark:border-[#262626] dark:bg-[#1a1a1a]/60">
                 {[
                   "Employee",
                   "Pay Period",
@@ -68,11 +68,11 @@ export default function TimesheetTable({ timesheets = [] }) {
               </tr>
             </thead>
 
-            <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-gray-100 dark:divide-[#262626]">
               {timesheets.map((timesheet) => (
                 <tr
                   key={timesheet.id}
-                  className="transition hover:bg-gray-50 dark:hover:bg-slate-800/50"
+                  className="transition hover:bg-gray-50 dark:hover:bg-[#1a1a1a]/50"
                 >
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">

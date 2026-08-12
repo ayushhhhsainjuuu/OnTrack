@@ -18,7 +18,7 @@ const statusStyles = {
   Rejected:
     "bg-red-100 text-red-700 dark:bg-red-950/50 dark:text-red-300",
   Cancelled:
-    "bg-gray-100 text-gray-600 dark:bg-slate-700 dark:text-slate-300",
+    "bg-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-300",
 };
 
 // Picks the right icon based on the request status
@@ -74,7 +74,7 @@ function RequestCard({ request, onCancel }) {
               : request.status === "Rejected"
                 ? "bg-red-100 dark:bg-red-950/50"
                 : request.status === "Cancelled"
-                  ? "bg-gray-100 dark:bg-slate-700"
+                  ? "bg-gray-100 dark:bg-[#1a1a1a]"
                   : "bg-amber-100 dark:bg-amber-950/50"
           }`}
         >
@@ -163,8 +163,8 @@ export default function LeaveTable({
 
   return (
     <div className="space-y-6">
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#1E293B]">
-        <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
+        <div className="border-b border-gray-100 px-5 py-4 dark:border-[#262626]">
           <div className="flex items-center gap-2">
             <Clock
               size={18}
@@ -199,7 +199,7 @@ export default function LeaveTable({
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-slate-700">
+          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
             {pendingRequests.map((request) => (
               <RequestCard
                 key={request.id}
@@ -211,12 +211,12 @@ export default function LeaveTable({
         )}
       </section>
 
-      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-slate-700 dark:bg-[#1E293B]">
-        <div className="border-b border-gray-100 px-5 py-4 dark:border-slate-700">
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 dark:border-[#262626] dark:bg-[#121212] dark:hover:border-[#333333] dark:hover:shadow-lg dark:hover:shadow-black/40">
+        <div className="border-b border-gray-100 px-5 py-4 dark:border-[#262626]">
           <div className="flex items-center gap-2">
             <History
               size={18}
-              className="text-[#6366F1]"
+              className="text-blue-500"
             />
 
             <h2 className="text-base font-bold text-gray-900 dark:text-white">
@@ -242,7 +242,7 @@ export default function LeaveTable({
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-100 dark:divide-slate-700">
+          <div className="divide-y divide-gray-100 dark:divide-[#262626]">
             {pastRequests.map((request) => (
               <RequestCard
                 key={request.id}

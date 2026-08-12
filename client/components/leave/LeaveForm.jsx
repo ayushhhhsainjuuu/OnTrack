@@ -184,7 +184,7 @@ export default function LeaveForm({
   return (
     // Full-screen dark overlay behind the modal
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 px-4 py-8">
-      <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-[#1E293B]">
+      <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-[#262626] dark:bg-[#121212]">
         <div className="flex items-start justify-between border-b border-gray-100 px-6 py-5 dark:border-slate-700">
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -226,7 +226,7 @@ export default function LeaveForm({
               onChange={(event) =>
                 updateField("type", event.target.value)
               }
-              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+              className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
             >
               <option value="Annual Leave">
                 Annual Leave
@@ -268,7 +268,7 @@ export default function LeaveForm({
                     event.target.value
                   )
                 }
-                className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
               />
             </div>
 
@@ -292,14 +292,14 @@ export default function LeaveForm({
                     event.target.value
                   )
                 }
-                className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:focus:ring-indigo-950"
+                className="mt-2 w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:focus:ring-blue-950"
               />
             </div>
           </div>
 
           {/* Live day count — only shows once a valid range is picked */}
           {totalDays > 0 && (
-            <div className="flex items-center gap-2 rounded-xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm text-indigo-700 dark:border-indigo-900/70 dark:bg-indigo-950/30 dark:text-indigo-300">
+            <div className="flex items-center gap-2 rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-700 dark:border-blue-900/70 dark:bg-blue-950/30 dark:text-blue-300">
               <CalendarDays size={17} />
 
               {totalDays} leave{" "}
@@ -325,7 +325,7 @@ export default function LeaveForm({
                 updateField("reason", event.target.value)
               }
               placeholder="Briefly explain the reason for your leave request..."
-              className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-indigo-950"
+              className="mt-2 w-full resize-none rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:border-[#262626] dark:bg-[#1a1a1a] dark:text-white dark:placeholder:text-slate-500 dark:focus:ring-blue-950"
             />
 
             {/* Character counter */}
@@ -354,7 +354,7 @@ export default function LeaveForm({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#6366F1] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#4F46E5] disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#1d4ed8] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {/* Swap button label/icon based on submitting state */}
               {isSubmitting ? (
