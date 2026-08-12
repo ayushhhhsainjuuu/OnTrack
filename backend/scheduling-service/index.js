@@ -102,6 +102,24 @@ app.post(
       });
     }
 
+    const startDateTime = new Date(start_time);
+    const endDateTime = new Date(end_time);
+
+    if (Number.isNaN(startDateTime.getTime()) || Number.isNaN(endDateTime.getTime())) {
+      return res.status(400).json({ error: "start_time and end_time must be valid dates." });
+    }
+
+    if (endDateTime <= startDateTime) {
+      return res.status(400).json({ error: "end_time must be after start_time." });
+    }
+
+    const shiftHours = (endDateTime - startDateTime) / (1000 * 60 * 60);
+    if (shiftHours > 10) {
+      return res.status(400).json({
+        error: "A schedule cannot exceed 10 hours between the start and end time.",
+      });
+    }
+
     try {
       const { overlappingSchedules, overlappingLeave } =
         await findSchedulingConflicts({ user_id, start_time, end_time });
@@ -167,6 +185,29 @@ app.patch(
 
     if (fetchError) {
       return res.status(404).json({ error: "Schedule not found." });
+    }
+
+    const nextStartTime = req.body.start_time ?? existingSchedule.start_time;
+    const nextEndTime = req.body.end_time ?? existingSchedule.end_time;
+
+    if (req.body.start_time !== undefined || req.body.end_time !== undefined) {
+      const startDateTime = new Date(nextStartTime);
+      const endDateTime = new Date(nextEndTime);
+
+      if (Number.isNaN(startDateTime.getTime()) || Number.isNaN(endDateTime.getTime())) {
+        return res.status(400).json({ error: "start_time and end_time must be valid dates." });
+      }
+
+      if (endDateTime <= startDateTime) {
+        return res.status(400).json({ error: "end_time must be after start_time." });
+      }
+
+      const shiftHours = (endDateTime - startDateTime) / (1000 * 60 * 60);
+      if (shiftHours > 10) {
+        return res.status(400).json({
+          error: "A schedule cannot exceed 10 hours between the start and end time.",
+        });
+      }
     }
 
     const { data, error } = await supabase
