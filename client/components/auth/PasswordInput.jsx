@@ -10,12 +10,13 @@ export default function PasswordInput({
   value,
   onChange,
   required = false,
+  labelClassName = "text-slate-700",
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
     <label className="block space-y-2">
-      <span className="text-sm font-bold text-slate-700">
+      <span className={`text-sm font-bold ${labelClassName}`}>
         {label}
       </span>
 

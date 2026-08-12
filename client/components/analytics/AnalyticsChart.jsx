@@ -23,6 +23,7 @@ import {
 } from "recharts";
 import { supabase } from "@/lib/supabase";
 import useTheme from "@/hooks/useTheme";
+import { literalDateFromIso } from "@/utils/scheduleTime";
 
 // Table/column names this page reads directly via Supabase (same pattern
 // CreateScheduleForm and the dashboards use for tables with no dedicated
@@ -67,8 +68,8 @@ function isMatch(clockRecord, schedule) {
 
   const bufferMs = MATCH_BUFFER_HOURS * 60 * 60 * 1000;
   const clockIn = new Date(clockRecord.clock_in_at).getTime();
-  const shiftStart = new Date(schedule.start_time).getTime() - bufferMs;
-  const shiftEnd = new Date(schedule.end_time).getTime() + bufferMs;
+  const shiftStart = literalDateFromIso(schedule.start_time).getTime() - bufferMs;
+  const shiftEnd = literalDateFromIso(schedule.end_time).getTime() + bufferMs;
 
   return clockIn >= shiftStart && clockIn <= shiftEnd;
 }

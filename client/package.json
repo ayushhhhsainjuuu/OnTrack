@@ -17,6 +17,7 @@
     "react-dom": "19.2.4",
     "recharge": "^0.0.1",
     "recharts": "^3.10.1",
+    "supabase": "^2.113.0",
     "tapable": "^2.3.3"
   },
   "devDependencies": {

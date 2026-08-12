@@ -16,6 +16,7 @@ import CreateScheduleForm, {
 import LeaveForm from "@/components/leave/LeaveForm";
 import LeaveTable from "@/components/leave/LeaveTable";
 import ManagerReviewQueue from "@/components/leave/ManagerReviewQueue";
+import { literalDateFromIso } from "@/utils/scheduleTime";
 
 /*
   Blue marks an individual-contributor shift (e.g. Cleaner) and
@@ -41,7 +42,7 @@ function getShiftRoleColor(role) {
 }
 
 function formatShiftTime(dateValue) {
-  return new Date(dateValue).toLocaleTimeString("en-US", {
+  return literalDateFromIso(dateValue).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -631,7 +632,7 @@ export default function SchedulePage() {
         const scheduleForDay = scheduleEntries.find(
           (schedule) =>
             sameDate(
-              new Date(schedule.start_time),
+              literalDateFromIso(schedule.start_time),
               fullDate
             )
         );

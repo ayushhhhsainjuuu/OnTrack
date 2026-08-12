@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Building2, Users, Clock, Umbrella, ArrowRight } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
+import { literalDateFromIso } from "@/utils/scheduleTime";
 
 // Every role label the app routes to a dashboard for (see the switch in
 // app/(app)/dashboard/page.jsx) - requested from the assignable-employees
@@ -236,8 +237,8 @@ export default function SuperAdminDashboard() {
     schedules
       .filter((s) => s.status !== "cancelled")
       .forEach((s) => {
-        const start = new Date(s.start_time).getTime();
-        const end = new Date(s.end_time).getTime();
+        const start = literalDateFromIso(s.start_time).getTime();
+        const end = literalDateFromIso(s.end_time).getTime();
         if (nowMs >= start && nowMs <= end) ids.add(s.user_id);
       });
 

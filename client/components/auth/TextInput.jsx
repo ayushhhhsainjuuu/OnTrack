@@ -6,10 +6,11 @@ export default function TextInput({
   value,
   onChange,
   required = false,
+  labelClassName = "text-slate-700",
 }) {
   return (
     <label className="block space-y-2">
-      <span className="text-sm font-bold text-slate-700">{label}</span>
+      <span className={`text-sm font-bold ${labelClassName}`}>{label}</span>
 
       <input
         type={type}
