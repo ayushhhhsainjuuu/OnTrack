@@ -9,6 +9,7 @@ import {
   XCircle,
 } from "lucide-react";
 
+// Badge colors for each request status
 const statusStyles = {
   Pending:
     "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300",
@@ -20,6 +21,7 @@ const statusStyles = {
     "bg-gray-100 text-gray-600 dark:bg-[#1a1a1a] dark:text-slate-300",
 };
 
+// Picks the right icon based on the request status
 function StatusIcon({ status }) {
   if (status === "Approved") {
     return (
@@ -48,6 +50,7 @@ function StatusIcon({ status }) {
     );
   }
 
+  // Default = Pending
   return (
     <Clock
       size={17}
@@ -56,12 +59,14 @@ function StatusIcon({ status }) {
   );
 }
 
+// A single leave request row (type, status, dates, reason, optional cancel button)
 function RequestCard({ request, onCancel }) {
-  const canCancel = request.status === "Pending";
+  const canCancel = request.status === "Pending"; // only pending requests can be cancelled
 
   return (
     <div className="flex flex-col justify-between gap-4 px-5 py-4 sm:flex-row sm:items-center">
       <div className="flex items-start gap-3">
+        {/* Circular status icon, background color matches the status */}
         <div
           className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
             request.status === "Approved"
@@ -77,11 +82,12 @@ function RequestCard({ request, onCancel }) {
         </div>
 
         <div>
+          {/* Leave type + status badge */}
           <div className="flex flex-wrap items-center gap-2">
             <p
               className={`text-sm font-semibold ${
                 request.status === "Cancelled"
-                  ? "text-gray-500 line-through dark:text-slate-500"
+                  ? "text-gray-500 line-through dark:text-slate-500" // strike through if cancelled
                   : "text-gray-900 dark:text-white"
               }`}
             >
@@ -97,6 +103,7 @@ function RequestCard({ request, onCancel }) {
             </span>
           </div>
 
+          {/* Date range + submitted date */}
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-slate-400">
             <span className="inline-flex items-center gap-1">
               <CalendarDays size={12} />
@@ -108,12 +115,14 @@ function RequestCard({ request, onCancel }) {
             </span>
           </div>
 
+          {/* Reason text (only if provided) */}
           {request.reason && (
             <p className="mt-2 max-w-xl text-xs leading-5 text-gray-500 dark:text-slate-400">
               {request.reason}
             </p>
           )}
 
+          {/* Manager's note, shown for rejected requests */}
           {request.rejectionNote && (
             <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 dark:bg-red-950/30 dark:text-red-300">
               Manager note: {request.rejectionNote}
@@ -122,6 +131,7 @@ function RequestCard({ request, onCancel }) {
         </div>
       </div>
 
+      {/* Cancel button — only appears on pending requests */}
       {canCancel && (
         <button
           type="button"
@@ -136,14 +146,17 @@ function RequestCard({ request, onCancel }) {
   );
 }
 
+// Main component: splits requests into "pending" and "history" sections
 export default function LeaveTable({
   requests = [],
   onCancel,
 }) {
+  // Still waiting for manager review
   const pendingRequests = requests.filter(
     (request) => request.status === "Pending"
   );
 
+  // Everything else (approved, rejected, cancelled)
   const pastRequests = requests.filter(
     (request) => request.status !== "Pending"
   );
@@ -168,6 +181,7 @@ export default function LeaveTable({
           </p>
         </div>
 
+        {/* Empty state vs list of pending cards */}
         {pendingRequests.length === 0 ? (
           <div className="px-6 py-10 text-center">
             <CheckCircle2
@@ -215,6 +229,7 @@ export default function LeaveTable({
           </p>
         </div>
 
+        {/* Empty state vs list of past cards */}
         {pastRequests.length === 0 ? (
           <div className="px-6 py-10 text-center">
             <History

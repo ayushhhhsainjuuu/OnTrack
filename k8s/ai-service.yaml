@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-service
+  labels:
+    app: ai-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai-service
+  template:
+    metadata:
+      labels:
+        app: ai-service
+    spec:
+      imagePullSecrets:
+        - name: acr-secret
+      containers:
+        - name: ai-service
+          image: ontrackacr.azurecr.io/ai-service:v1
+          ports:
+            - containerPort: 4005
+          env:
+            - name: PORT
+              value: "4005"
+            - name: SUPABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-secrets
+                  key: SUPABASE_URL
+            - name: SUPABASE_SERVICE_ROLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: supabase-secrets
+                  key: SUPABASE_SERVICE_ROLE_KEY
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4005
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service
+spec:
+  selector:
+    app: ai-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 4005
+  type: ClusterIP
+  

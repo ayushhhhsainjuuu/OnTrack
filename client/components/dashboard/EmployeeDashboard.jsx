@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import ClockPhotoCapture from "./ClockPhotoCapture";
+import { literalDateFromIso } from "@/utils/scheduleTime";
 
 const OFFICE_LAT = 51.06474583312273;
 const OFFICE_LNG = -114.08930946420794;
@@ -658,13 +659,13 @@ export default function EmployeeDashboard() {
       .filter(
         (schedule) =>
           schedule.status !== "cancelled" &&
-          new Date(schedule.end_time).getTime() > nowMs
+          literalDateFromIso(schedule.end_time).getTime() > nowMs
       )
-      .sort((a, b) => new Date(a.start_time) - new Date(b.start_time))
+      .sort((a, b) => literalDateFromIso(a.start_time) - literalDateFromIso(b.start_time))
       .slice(0, 4)
       .map((schedule) => {
-        const start = new Date(schedule.start_time);
-        const end = new Date(schedule.end_time);
+        const start = literalDateFromIso(schedule.start_time);
+        const end = literalDateFromIso(schedule.end_time);
 
         return {
           id: schedule.id,

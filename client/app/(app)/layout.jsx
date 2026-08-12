@@ -17,6 +17,7 @@ import {
   ClipboardClock,
   Clock3,
   BarChart3,
+  UserPlus,
   X,
 } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
@@ -50,6 +51,12 @@ const attendanceNavItem = {
   href: "/attendance",
   label: "Attendance",
   icon: ClipboardClock,
+};
+
+const addEmployeeNavItem = {
+  href: "/add-employee",
+  label: "Add Employee",
+  icon: UserPlus,
 };
 
 const initialNotifications = [
@@ -147,6 +154,19 @@ function canViewAttendance(role) {
   ].includes(normalizedRole);
 }
 
+function canAddEmployees(role) {
+  const normalizedRole = (role || "")
+    .trim()
+    .toLowerCase();
+
+  return [
+    "owner",
+    "general manager (gm)",
+    "general manager",
+    "gm",
+  ].includes(normalizedRole);
+}
+
 export default function DashboardLayout({
   children,
 }) {
@@ -171,13 +191,22 @@ export default function DashboardLayout({
   const showAttendance =
     !isLoading && canViewAttendance(role);
 
-  const nav = showAttendance
-    ? [
-        baseNav[0],
-        attendanceNavItem,
-        ...baseNav.slice(1),
-      ]
-    : baseNav;
+  const showAddEmployee =
+    !isLoading && canAddEmployees(role);
+
+  const nav = baseNav.reduce((items, item) => {
+    items.push(item);
+
+    if (item.href === "/dashboard" && showAttendance) {
+      items.push(attendanceNavItem);
+    }
+
+    if (item.href === "/analytics" && showAddEmployee) {
+      items.push(addEmployeeNavItem);
+    }
+
+    return items;
+  }, []);
 
   const unreadCount = notifications.filter(
     (notification) => !notification.read

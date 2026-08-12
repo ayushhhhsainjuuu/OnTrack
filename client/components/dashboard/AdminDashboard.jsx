@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Users, Clock, CalendarCheck, Umbrella } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
 import { supabase } from "@/lib/supabase";
+import { literalDateFromIso } from "@/utils/scheduleTime";
 
 // Mirrors the role hierarchy in components/schedule/CreateScheduleForm.jsx -
 // a Project Manager manages Cleaner/Foreman/Lead, an Accountant Supervisor
@@ -241,7 +242,7 @@ export default function AdminDashboard() {
     const weekEnd = weekStart + 7 * 86400000;
 
     return teamSchedules.filter((s) => {
-      const start = new Date(s.start_time).getTime();
+      const start = literalDateFromIso(s.start_time).getTime();
       return start >= weekStart && start < weekEnd;
     }).length;
   }, [teamSchedules]);
@@ -256,8 +257,8 @@ export default function AdminDashboard() {
   const onShiftIds = useMemo(() => {
     const ids = new Set();
     teamSchedules.forEach((s) => {
-      const start = new Date(s.start_time).getTime();
-      const end = new Date(s.end_time).getTime();
+      const start = literalDateFromIso(s.start_time).getTime();
+      const end = literalDateFromIso(s.end_time).getTime();
       if (nowMs >= start && nowMs <= end) ids.add(s.user_id);
     });
     return ids;
