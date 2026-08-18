@@ -48,15 +48,17 @@ jobs:
           publish-profile: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
           package: ./client/deploy
 
-      # SCHEDULING_SERVICE_URL is read server-side at request time inside
-      # app/api/schedule/route.js, not at build time, so it can't be baked in
-      # above like the NEXT_PUBLIC_* vars - it has to be a runtime App
-      # Setting. Set via Kudu using the publish profile's own deployment
-      # credentials, avoiding the need for an Entra ID service principal.
+      # SCHEDULING_SERVICE_URL/AUTH_SERVICE_URL are read server-side at request
+      # time inside app/api/schedule/route.js and app/api/employees/route.js,
+      # not at build time, so they can't be baked in above like the
+      # NEXT_PUBLIC_* vars - they have to be runtime App Settings. Set via
+      # Kudu using the publish profile's own deployment credentials, avoiding
+      # the need for an Entra ID service principal.
       - name: Set Application Settings via Kudu
         env:
           PUBLISH_PROFILE: ${{ secrets.AZURE_CLIENT_PUBLISH_PROFILE }}
           SCHEDULING_SERVICE_URL: ${{ secrets.SCHEDULING_SERVICE_URL }}
+          AUTH_SERVICE_URL: ${{ secrets.AUTH_SERVICE_URL }}
         run: |
           python3 - <<'PYEOF'
           import os, re, json, base64, urllib.request
@@ -76,7 +78,10 @@ jobs:
               raise SystemExit("Could not find site name in publish profile")
           site = site_match.group(1)
 
-          settings = {"SCHEDULING_SERVICE_URL": os.environ["SCHEDULING_SERVICE_URL"]}
+          settings = {
+              "SCHEDULING_SERVICE_URL": os.environ["SCHEDULING_SERVICE_URL"],
+              "AUTH_SERVICE_URL": os.environ["AUTH_SERVICE_URL"],
+          }
 
           data = json.dumps(settings).encode()
           auth = base64.b64encode(f"{user}:{pwd}".encode()).decode()
