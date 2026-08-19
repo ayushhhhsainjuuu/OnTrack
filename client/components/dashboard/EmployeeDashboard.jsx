@@ -13,9 +13,10 @@ import {
 import { supabase } from "@/lib/supabase";
 import ClockPhotoCapture from "./ClockPhotoCapture";
 import { literalDateFromIso } from "@/utils/scheduleTime";
-
-const OFFICE_LAT = 51.06474583312273;
-const OFFICE_LNG = -114.08930946420794;
+//51.128777298448114, -114.15500248617802 -> home
+//51.06474583312273, -114.08930946420794 -> office
+const OFFICE_LAT = 51.128777298448114;
+const OFFICE_LNG = -114.15500248617802;
 const GEOFENCE_RADIUS_METERS = 1000;
 
 // Standard full-time weekly hours, shown as the "Hours This Week" target.
