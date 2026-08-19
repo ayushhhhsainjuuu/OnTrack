@@ -1,0 +1,46 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ontrack-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /auth(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: auth-service
+                port:
+                  number: 80
+          - path: /ai(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ai-service
+                port:
+                  number: 80
+          - path: /schedule(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: scheduling-service
+                port:
+                  number: 80
+          - path: /clock(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: clock-service
+                port:
+                  number: 80
+          - path: /leave(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: leave-service
+                port:
+                  number: 80
